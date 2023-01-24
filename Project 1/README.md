@@ -1,0 +1,1 @@
+To compile and build the programs just type in "make" and run the command. It will compile and build all programs by default.
