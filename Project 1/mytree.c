@@ -40,10 +40,14 @@ void printDirs(char* path) {
             if(dir->d_type != DT_DIR) {
                 printDirName(dir);
             } else {
+                if(debug)
+                    printf("\nHERE2\t%s\n", dir->d_name);
                 printDirName(dir);
                 //char* newPath = strcat(path, "/");
                 //newPath = strcat(newPath, (char*)dir->d_name);
-                char* newPath = strcat(path, (char*)dir->d_name);
+                char* pathCopy = (char*) malloc(strlen(path)+1);
+                memcpy(pathCopy, path, strlen(path)+1);
+                char* newPath = strcat(pathCopy, (char*)dir->d_name);
                 dirDepth++;
                 printDirs(newPath);
                 dirDepth--;
@@ -51,7 +55,6 @@ void printDirs(char* path) {
         }
         closedir(d);
     }
-    return;
 }
 
 /**
