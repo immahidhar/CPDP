@@ -15,7 +15,7 @@ void printDirName(struct dirent *dir) {
         printf("|    ");
     printf("|--- ");
     if(dir->d_type == DT_DIR){
-        printf("%s %d", strcat(dir->d_name, "/"), dir->d_type);
+        printf("%s", strcat(dir->d_name, "/"));
     } else {
         printf("%s", dir->d_name);
     }
@@ -45,9 +45,14 @@ void printDirs(char* path) {
                 printDirName(dir);
                 //char* newPath = strcat(path, "/");
                 //newPath = strcat(newPath, (char*)dir->d_name);
-                char* pathCopy = (char*) malloc(strlen(path)+1);
-                memcpy(pathCopy, path, strlen(path)+1);
-                char* newPath = strcat(pathCopy, (char*)dir->d_name);
+                char* newPath = NULL;
+                if(strcmp(path, ".") == 0) {
+                    newPath = dir->d_name;
+                } else {
+                    char* pathCopy = (char*) malloc(strlen(path)+1);
+                    memcpy(pathCopy, path, strlen(path)+1);
+                    newPath = strcat(pathCopy, (char*)dir->d_name);
+                }
                 dirDepth++;
                 printDirs(newPath);
                 dirDepth--;
