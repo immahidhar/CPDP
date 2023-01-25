@@ -37,6 +37,8 @@ void printDirs(char* path) {
         while((dir = readdir(d)) != NULL) {
             if(dir == NULL || strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0)
                 continue;
+            if(dir->d_name[0] == '.')
+                continue;
             if(dir->d_type != DT_DIR) {
                 printDirName(dir);
             } else {
@@ -45,17 +47,28 @@ void printDirs(char* path) {
                 printDirName(dir);
                 //char* newPath = strcat(path, "/");
                 //newPath = strcat(newPath, (char*)dir->d_name);
+                bool memFlag = false;
+                char* pathCopy = NULL;
                 char* newPath = NULL;
                 if(strcmp(path, ".") == 0) {
                     newPath = dir->d_name;
                 } else {
-                    char* pathCopy = (char*) malloc(strlen(path)+1);
+                    pathCopy = (char*) malloc(strlen(path)+2);
                     memcpy(pathCopy, path, strlen(path)+1);
-                    newPath = strcat(pathCopy, (char*)dir->d_name);
+                    if(pathCopy[strlen(path)-2] == '/'){
+                        newPath = strcat(pathCopy, (char*)dir->d_name);
+                    } else {
+                        newPath = strcat(pathCopy, "/");
+                        newPath = strcat(newPath, (char*)dir->d_name);
+                    }
                 }
                 dirDepth++;
                 printDirs(newPath);
                 dirDepth--;
+                if(memFlag) {
+                    free(pathCopy);
+                    free(newPath);
+                }
             }
         }
         closedir(d);
