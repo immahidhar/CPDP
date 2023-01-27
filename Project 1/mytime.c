@@ -16,8 +16,7 @@ int executeCommand(char *argv[]) {
     if (pid == 0) {
         // Child process
         // execute
-        //printf("executing %s\n", argv[1]);
-        execvp(argv[1], argv);
+        execvp(argv[1], &argv[1]);
         printf("Unknown command - %s\n", argv[1]);
         exit(-1);
     } else {
@@ -38,8 +37,6 @@ int main(int argc, char *argv[]) {
         return(1);
     } else {
         cmd = argv[1];
-        for(int i=0; i<=argc; i++)
-            printf("%s\t", argv[i]);
-        //return executeCommand(argv);
+        return executeCommand(argv);
     }
 }
