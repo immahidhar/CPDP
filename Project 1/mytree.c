@@ -45,8 +45,6 @@ void printDirs(char* path) {
                 if(debug)
                     printf("\nHERE2\t%s\n", dir->d_name);
                 printDirName(dir);
-                //char* newPath = strcat(path, "/");
-                //newPath = strcat(newPath, (char*)dir->d_name);
                 bool memFlag = false;
                 char* pathCopy = NULL;
                 char* newPath = NULL;
