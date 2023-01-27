@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 
 /**
  * execute the command passed in arg
@@ -13,6 +15,8 @@ int executeCommand(char *argv[]) {
         printf("Error while forking!");
         return -1;
     }
+    struct rusage childUsage;
+    struct timeval childStime, childUtime;
     if (pid == 0) {
         // Child process
         // execute
@@ -22,6 +26,11 @@ int executeCommand(char *argv[]) {
     } else {
         // parent process
         waitpid(pid, NULL, 0);
+        getrusage(RUSAGE_CHILDREN, &childUsage);
+        childUtime = childUsage.ru_utime;
+        childStime = childUsage.ru_stime;
+        printf("%s  %ld.%.6ds user  %ld.%.6ds system", argv[1], childUtime.tv_sec, (childUtime.tv_usec), 
+            childStime.tv_sec, (childStime.tv_usec));
     }
     return 0;
 }
@@ -31,12 +40,10 @@ int executeCommand(char *argv[]) {
  * @return exit code int
  */
 int main(int argc, char *argv[]) {
-    char* cmd = NULL;
     if(argc == 1) {
         printf("No command provided to time");
-        return(1);
+        return -1;
     } else {
-        cmd = argv[1];
         return executeCommand(argv);
     }
 }
