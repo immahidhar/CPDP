@@ -16,7 +16,8 @@ int executeCommand(char *argv[]) {
         return -1;
     }
     struct rusage childUsage;
-    struct timeval childStime, childUtime;
+    struct timeval childStime, childUtime, childBegin, childEnd;
+    gettimeofday(&childBegin, 0);
     if (pid == 0) {
         // Child process
         // execute
@@ -29,8 +30,12 @@ int executeCommand(char *argv[]) {
         getrusage(RUSAGE_CHILDREN, &childUsage);
         childUtime = childUsage.ru_utime;
         childStime = childUsage.ru_stime;
-        printf("%s  %ld.%.6ds user  %ld.%.6ds system", argv[1], childUtime.tv_sec, (childUtime.tv_usec), 
-            childStime.tv_sec, (childStime.tv_usec));
+        gettimeofday(&childEnd, 0);
+        long seconds = childEnd.tv_sec - childBegin.tv_sec;
+        long microseconds = childEnd.tv_usec - childBegin.tv_usec;
+        double elapsed = seconds + microseconds*1e-6;
+        printf("%s  %ld.%.6ds user  %ld.%.6ds system  %.6fs elapsed\n", argv[1], childUtime.tv_sec, 
+        (childUtime.tv_usec), childStime.tv_sec, (childStime.tv_usec), elapsed);
     }
     return 0;
 }
