@@ -38,6 +38,8 @@ int main(int argc, char *argv[]) {
         return(1);
     } else {
         cmd = argv[1];
-        return executeCommand(argv);
+        for(int i=0; i<=argc; i++)
+            printf("%s\t", argv[i]);
+        //return executeCommand(argv);
     }
 }
