@@ -31,7 +31,7 @@ void printModCounts(void) {
     for(int i = 0; i < NUM_HOURS; i++) {
         printf("%s : %d\n", getTimeString(past_hours[i], timeString), mod_count[i]);
     }
-    //free(timeString);
+    free(timeString);
 }
 
 void exploreDirs(char* path) {
