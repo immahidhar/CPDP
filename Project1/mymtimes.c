@@ -98,7 +98,7 @@ void exploreDirs(char* path) {
         }
         closedir(d);
     } else {
-        fprintf(stderr, "No such directory found - %s\n", path);
+        fprintf(stderr, "Couldn't find/access directory - %s\n", path);
     }
 
 }

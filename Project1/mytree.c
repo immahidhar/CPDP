@@ -73,7 +73,7 @@ void printDirs(char* path) {
         }
         closedir(d);
     } else {
-        fprintf(stderr, "No such directory found - %s", path);
+        fprintf(stderr, "Couldn't find/access directory - %s", path);
     }
 }
 
