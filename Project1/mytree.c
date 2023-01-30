@@ -34,6 +34,7 @@ void printDirs(char* path) {
         printf("\nHERE\t%s\n", path);
 
     if(d) {
+        
         while((dir = readdir(d)) != NULL) {
             if(dir == NULL || strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0)
                 continue;
@@ -70,6 +71,8 @@ void printDirs(char* path) {
             }
         }
         closedir(d);
+    } else {
+        fprintf(stderr, "No such directory found - %s", path);
     }
 }
 
@@ -88,6 +91,7 @@ int main(int argc, char *argv[]) {
     }
 
     printf("%s\n", path);
+
     printDirs(path);
 
     return(0);
