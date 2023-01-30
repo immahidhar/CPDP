@@ -31,7 +31,6 @@ void printModCounts(void) {
     for(int i = 0; i < NUM_HOURS; i++) {
         printf("%s : %d\n", getTimeString(past_hours[i], timeString), mod_count[i]);
     }
-    printf("%s\n", getTimeString(current_time, timeString));
     //free(timeString);
 }
 
@@ -40,6 +39,9 @@ void exploreDirs(char* path) {
     struct dirent *dir;
     d = opendir(path);
 
+    /*if(debug)
+        printf("%s\n", path);*/
+
     if(d) {   
         while((dir = readdir(d)) != NULL) {
             if(dir == NULL || strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0)
@@ -47,30 +49,31 @@ void exploreDirs(char* path) {
             if(dir->d_name[0] == '.')
                 continue;
             if(dir->d_type == DT_DIR) {
-                if(debug)
-                    printf("going into dir %s\n", dir->d_name);
+                /*if(debug)
+                    printf("going into dir %s\n", dir->d_name);*/
 
                 char* pathCopy = NULL;
                 char* newPath = NULL;
 
-                pathCopy = (char*) malloc(strlen(path)+2);
+                pathCopy = (char*) malloc(strlen(path)+100);
                 memcpy(pathCopy, path, strlen(path)+1);
-                if(pathCopy[strlen(path)-2] == '/'){
+                if(pathCopy[strlen(pathCopy)-2] == '/'){
                     newPath = strcat(pathCopy, (char*)dir->d_name);
                 } else {
                     newPath = strcat(pathCopy, "/");
                     newPath = strcat(newPath, (char*)dir->d_name);
                 }
                 exploreDirs(newPath);
+                free(pathCopy);
             } else {
                 struct stat result;
                 
                 char* pathCopy = NULL;
                 char* filename = NULL;
 
-                pathCopy = (char*) malloc(strlen(path)+2);
+                pathCopy = (char*) malloc(strlen(path)+100);
                 memcpy(pathCopy, path, strlen(path)+1);
-                if(pathCopy[strlen(path)-2] == '/'){
+                if(pathCopy[strlen(pathCopy)-2] == '/'){
                     filename = strcat(pathCopy, (char*)dir->d_name);
                 } else {
                     filename = strcat(pathCopy, "/");
@@ -79,24 +82,23 @@ void exploreDirs(char* path) {
 
                 if(stat(filename, &result)==0) {
                     long mod_time = result.st_mtime;
-                    if(debug)
-                        printf("%s %ld\t", dir->d_name, mod_time);
+                    /*if(debug)
+                        printf("%s %ld\t", dir->d_name, mod_time);*/
                     long timeDiff = current_time - mod_time;
                     int n = timeDiff / HR_IN_SECS;
-                    if(debug)
-                        printf("n = %d\n", n);
+                    /*if(debug)
+                        printf("n = %d\n", n);*/
                     if(n < 24) {
                         mod_count[n]++;
                     }
                 }
-
-                //free(pathCopy);
+                free(pathCopy);
             }
             
         }
         closedir(d);
     } else {
-        fprintf(stderr, "No such directory found - %s", path);
+        fprintf(stderr, "No such directory found - %s\n", path);
     }
 
 }

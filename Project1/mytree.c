@@ -52,7 +52,8 @@ void printDirs(char* path) {
                 if(strcmp(path, ".") == 0) {
                     newPath = dir->d_name;
                 } else {
-                    pathCopy = (char*) malloc(strlen(path)+2);
+                    memFlag = true;
+                    pathCopy = (char*) malloc(strlen(path)+100);
                     memcpy(pathCopy, path, strlen(path)+1);
                     if(pathCopy[strlen(path)-2] == '/'){
                         newPath = strcat(pathCopy, (char*)dir->d_name);
@@ -66,7 +67,7 @@ void printDirs(char* path) {
                 dirDepth--;
                 if(memFlag) {
                     free(pathCopy);
-                    free(newPath);
+                    //free(newPath);
                 }
             }
         }
