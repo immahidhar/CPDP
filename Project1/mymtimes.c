@@ -8,15 +8,15 @@
 #include <sys/stat.h>
 
 #define NUM_HOURS 24
-#define MIL 1000000
 #define HR_IN_SECS 3600
 
 static long current_time;
 static long past_hours[NUM_HOURS];
 static int mod_count[NUM_HOURS];
 
-static bool debug = false;
-
+/**
+ * print time and date
+*/
 char* getTimeString(long ts, char* timeString) {
     time_t nowtime;
     struct tm *nowtm;
@@ -26,6 +26,9 @@ char* getTimeString(long ts, char* timeString) {
     return timeString;
 }
 
+/**
+ * print number of files modified
+*/
 void printModCounts(void) {
     char* timeString = (char*) malloc(100);
     for(int i = 0; i < NUM_HOURS; i++) {
@@ -34,13 +37,13 @@ void printModCounts(void) {
     free(timeString);
 }
 
+/**
+ * explore dirs recursively and calculate number of files modified
+*/
 void exploreDirs(char* path) {
     DIR *d;
     struct dirent *dir;
     d = opendir(path);
-
-    /*if(debug)
-        printf("%s\n", path);*/
 
     if(d) {   
         while((dir = readdir(d)) != NULL) {
@@ -49,8 +52,6 @@ void exploreDirs(char* path) {
             if(dir->d_name[0] == '.')
                 continue;
             if(dir->d_type == DT_DIR) {
-                /*if(debug)
-                    printf("going into dir %s\n", dir->d_name);*/
 
                 char* pathCopy = NULL;
                 char* newPath = NULL;
@@ -82,12 +83,8 @@ void exploreDirs(char* path) {
 
                 if(stat(filename, &result)==0) {
                     long mod_time = result.st_mtime;
-                    /*if(debug)
-                        printf("%s %ld\t", dir->d_name, mod_time);*/
                     long timeDiff = current_time - mod_time;
                     int n = timeDiff / HR_IN_SECS;
-                    /*if(debug)
-                        printf("n = %d\n", n);*/
                     if(n < 24) {
                         mod_count[n]++;
                     }
@@ -103,10 +100,13 @@ void exploreDirs(char* path) {
 
 }
 
+/**
+ * set current time and initiate variables
+*/
 void setCurrentTime(void) {
     struct timeval curr_time;
     gettimeofday(&curr_time, NULL);
-    current_time = curr_time.tv_sec;// + (curr_time.tv_usec * MIL);
+    current_time = curr_time.tv_sec;
     long time = current_time;
     for(int i = 0; i < NUM_HOURS; i++) {
         past_hours[i] = time - HR_IN_SECS;

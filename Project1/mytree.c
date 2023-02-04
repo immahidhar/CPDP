@@ -5,7 +5,6 @@
 #include <dirent.h>
 
 static int dirDepth = 0;
-static bool debug = false;
 
 /**
  * prints directory name
@@ -30,9 +29,6 @@ void printDirs(char* path) {
     struct dirent *dir;
     d = opendir(path);
 
-    if(debug)
-        printf("\nHERE\t%s\n", path);
-
     if(d) {
         
         while((dir = readdir(d)) != NULL) {
@@ -43,8 +39,6 @@ void printDirs(char* path) {
             if(dir->d_type != DT_DIR) {
                 printDirName(dir);
             } else {
-                if(debug)
-                    printf("\nHERE2\t%s\n", dir->d_name);
                 printDirName(dir);
                 bool memFlag = false;
                 char* pathCopy = NULL;
@@ -67,7 +61,6 @@ void printDirs(char* path) {
                 dirDepth--;
                 if(memFlag) {
                     free(pathCopy);
-                    //free(newPath);
                 }
             }
         }
