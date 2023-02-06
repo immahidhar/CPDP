@@ -7,17 +7,13 @@
 static int dirDepth = 0;
 
 /**
- * prints directory name
+ * prints directory/file name
 */
 void printDirName(struct dirent *dir) {
-    for(int i=0; i<dirDepth; i++)
-        printf("|    ");
+    for(int i=0; i<dirDepth; i++) printf("|    ");
     printf("|--- ");
-    if(dir->d_type == DT_DIR){
-        printf("%s", strcat(dir->d_name, "/"));
-    } else {
-        printf("%s", dir->d_name);
-    }
+    if(dir->d_type == DT_DIR) printf("%s", strcat(dir->d_name, "/"));
+    else printf("%s", dir->d_name);
     printf("\n");
 }
 
@@ -30,11 +26,10 @@ void printDirs(char* path) {
     d = opendir(path);
 
     if(d) {
-        
         while((dir = readdir(d)) != NULL) {
-            if(dir == NULL || strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0)
-                continue;
-            if(dir->d_name[0] == '.')
+            //skip unncecessary dirs
+            if(dir == NULL || strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0 
+            || dir->d_name[0] == '.')
                 continue;
             if(dir->d_type != DT_DIR) {
                 printDirName(dir);
@@ -49,7 +44,7 @@ void printDirs(char* path) {
                     memFlag = true;
                     pathCopy = (char*) malloc(strlen(path)+100);
                     memcpy(pathCopy, path, strlen(path)+1);
-                    if(pathCopy[strlen(path)-2] == '/'){
+                    if(pathCopy[strlen(path)-1] == '/') {
                         newPath = strcat(pathCopy, (char*)dir->d_name);
                     } else {
                         newPath = strcat(pathCopy, "/");
@@ -59,14 +54,12 @@ void printDirs(char* path) {
                 dirDepth++;
                 printDirs(newPath);
                 dirDepth--;
-                if(memFlag) {
-                    free(pathCopy);
-                }
+                if(memFlag) free(pathCopy);
             }
         }
         closedir(d);
     } else {
-        fprintf(stderr, "Couldn't find/access directory - %s", path);
+        fprintf(stderr, "Couldn't find/access directory - %s\n", path);
     }
 }
 
@@ -78,11 +71,8 @@ int main(int argc, char *argv[]) {
 
     char* path = NULL;
 
-    if(argc == 1) {
-        path = ".";
-    } else {
-        path = argv[1];
-    }
+    if(argc == 1) path = ".";
+    else path = argv[1];
 
     printf("%s\n", path);
 

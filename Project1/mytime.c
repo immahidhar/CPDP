@@ -9,10 +9,10 @@
  * execute the command passed in arg
  * @return exit code int
 */
-int executeCommand(char *argv[]) {
+int executeCommand(int argc, char *argv[]) {
     int pid = 0;
     struct rusage childUsage;
-    struct timeval childStime, childUtime, childBegin, childEnd;
+    struct timeval childBegin, childEnd;
     gettimeofday(&childBegin, 0);
     if ((pid = fork()) == -1) {
         fprintf(stderr, "Error while forking!");
@@ -29,12 +29,13 @@ int executeCommand(char *argv[]) {
         waitpid(pid, NULL, 0);
         gettimeofday(&childEnd, 0);
         getrusage(RUSAGE_CHILDREN, &childUsage);
-        childUtime = childUsage.ru_utime;
-        childStime = childUsage.ru_stime;
         long elapsedSeconds = childEnd.tv_sec - childBegin.tv_sec;
         long elapsedMicroseconds = childEnd.tv_usec - childBegin.tv_usec;
-        printf("%s  %ld.%.6ds user  %ld.%.6ds system  %ld.%.6lds elapsed\n", argv[1], childUtime.tv_sec, 
-        childUtime.tv_usec, childStime.tv_sec, childStime.tv_usec, elapsedSeconds, elapsedMicroseconds);
+        for(int i = 1; i < argc; i++)
+            printf("%s ", argv[i]);
+        printf(":= %ld.%.6ds user  %ld.%.6ds system  %ld.%.6lds elapsed\n", 
+        childUsage.ru_utime.tv_sec, childUsage.ru_utime.tv_usec, childUsage.ru_stime.tv_sec, 
+        childUsage.ru_stime.tv_usec, elapsedSeconds, elapsedMicroseconds);
     }
     return 0;
 }
@@ -45,9 +46,7 @@ int executeCommand(char *argv[]) {
  */
 int main(int argc, char *argv[]) {
     if(argc == 1) {
-        fprintf(stderr, "No command provided to time");
+        fprintf(stderr, "syntax error - correct usage - mytime.x cmd args...");
         return -1;
-    } else {
-        return executeCommand(argv);
-    }
+    } else return executeCommand(argc, argv);
 }
