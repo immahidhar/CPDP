@@ -31,9 +31,8 @@ char* getTimeString(long ts, char* timeString) {
 */
 void printModCounts(void) {
     char* timeString = (char*) malloc(100);
-    for(int i = 0; i < NUM_HOURS; i++) {
+    for(int i = 0; i < NUM_HOURS; i++)
         printf("%s : %d\n", getTimeString(past_hours[i], timeString), mod_count[i]);
-    }
     free(timeString);
 }
 
@@ -47,18 +46,18 @@ void exploreDirs(char* path) {
 
     if(d) {   
         while((dir = readdir(d)) != NULL) {
-            if(dir == NULL || strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0)
-                continue;
-            if(dir->d_name[0] == '.')
-                continue;
-            if(dir->d_type == DT_DIR) {
 
+            if(dir == NULL || strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0 
+            || dir->d_name[0] == '.')
+                continue;
+
+            if(dir->d_type == DT_DIR) {
                 char* pathCopy = NULL;
                 char* newPath = NULL;
 
-                pathCopy = (char*) malloc(strlen(path)+100);
+                pathCopy = (char*) malloc(strlen(path)+1000);
                 memcpy(pathCopy, path, strlen(path)+1);
-                if(pathCopy[strlen(pathCopy)-2] == '/'){
+                if(pathCopy[strlen(pathCopy)-1] == '/'){
                     newPath = strcat(pathCopy, (char*)dir->d_name);
                 } else {
                     newPath = strcat(pathCopy, "/");
@@ -72,9 +71,9 @@ void exploreDirs(char* path) {
                 char* pathCopy = NULL;
                 char* filename = NULL;
 
-                pathCopy = (char*) malloc(strlen(path)+100);
+                pathCopy = (char*) malloc(strlen(path)+1000);
                 memcpy(pathCopy, path, strlen(path)+1);
-                if(pathCopy[strlen(pathCopy)-2] == '/'){
+                if(pathCopy[strlen(pathCopy)-1] == '/'){
                     filename = strcat(pathCopy, (char*)dir->d_name);
                 } else {
                     filename = strcat(pathCopy, "/");
@@ -85,10 +84,10 @@ void exploreDirs(char* path) {
                     long mod_time = result.st_mtime;
                     long timeDiff = current_time - mod_time;
                     int n = timeDiff / HR_IN_SECS;
-                    if(n < 24) {
+                    if(n < 24)
                         mod_count[n]++;
-                    }
                 }
+
                 free(pathCopy);
             }
             
@@ -112,9 +111,8 @@ void setCurrentTime(void) {
         past_hours[i] = time - HR_IN_SECS;
         time = time - HR_IN_SECS;
     }
-    for(int i = 0; i < NUM_HOURS; i++) {
+    for(int i = 0; i < NUM_HOURS; i++)
         mod_count[i] = 0;
-    }
 }
 
 /**
@@ -127,11 +125,8 @@ int main(int argc, char *argv[]) {
 
     char* path = NULL;
 
-    if(argc == 1) {
-        path = ".";
-    } else {
-        path = argv[1];
-    }
+    if(argc == 1) path = "."; 
+    else path = argv[1];
     
     exploreDirs(path);
 

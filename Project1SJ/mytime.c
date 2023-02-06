@@ -12,7 +12,7 @@ int main(int argc, char **argv) {
         fprintf(stderr, "No command provided to time");
         return -1;
     } else {
-        int pid = 0;
+        int pid = 0, stat = 0;
         struct rusage rusg;
         struct timespec start, end;
         struct timeval stime, utime;
@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
             fprintf(stderr, "Error executing command - %s\n", argv[1]);
             exit(-1);
         } else {
-            waitpid(pid, NULL, 0);
+            wait(&stat);
             clock_gettime(CLOCK_REALTIME, &end);
             double elapsed = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / BILLION;
             getrusage(RUSAGE_CHILDREN, &rusg);

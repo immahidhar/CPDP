@@ -31,6 +31,7 @@ void printDirs(char* path) {
             if(dir == NULL || strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0 
             || dir->d_name[0] == '.')
                 continue;
+            
             if(dir->d_type != DT_DIR) {
                 printDirName(dir);
             } else {
@@ -56,6 +57,7 @@ void printDirs(char* path) {
                 dirDepth--;
                 if(memFlag) free(pathCopy);
             }
+            
         }
         closedir(d);
     } else {
