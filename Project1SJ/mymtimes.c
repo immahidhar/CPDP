@@ -41,8 +41,9 @@ void recursiveDir(char* path) {
                     long mT = stat_r.st_mtime;
                     long tD = c_t - mT;
                     int n = tD / 3600;
-                    if(n < 24)
+                    if(n>=0 && n < 24) {
                         counts[n]++;
+                    }
                 }
                 free(path_copy);
             } else {
