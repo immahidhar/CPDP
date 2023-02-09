@@ -80,7 +80,7 @@ void exploreDirs(char* path) {
                     long mod_time = result.st_mtime;
                     long timeDiff = current_time - mod_time;
                     int n = timeDiff / HR_IN_SECS;
-                    if(n < 24) mod_count[n]++;
+                    if(n >= 0 && n < 24) mod_count[n]++;
                 }
                 free(pathCopy);
             }
