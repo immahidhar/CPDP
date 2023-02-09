@@ -12,7 +12,7 @@
 
 static long current_time;
 static long past_hours[NUM_HOURS];
-static long mod_count[NUM_HOURS];
+static int mod_count[NUM_HOURS];
 
 /**
  * return time and date
@@ -32,7 +32,7 @@ char* getTimeString(long ts, char* timeString) {
 void printModCounts(void) {
     char* timeString = (char*) malloc(100);
     for(int i = NUM_HOURS-1; i >= 0; i--)
-        printf("%s : %ld\n", getTimeString(past_hours[i], timeString), mod_count[i]);
+        printf("%s : %d\n", getTimeString(past_hours[i], timeString), mod_count[i]);
     free(timeString);
 }
 
@@ -107,7 +107,7 @@ void setCurrentTime(void) {
         time = time - HR_IN_SECS;
     }
     for(int i = 0; i < NUM_HOURS; i++)
-        mod_count[i] = 0l;
+        mod_count[i] = 0;
 }
 
 /**
