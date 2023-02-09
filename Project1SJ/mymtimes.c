@@ -29,7 +29,7 @@ void recursiveDir(char* path) {
                 struct stat stat_r;
                 char* path_copy = NULL;
                 char* file_name = NULL;
-                path_copy = (char*) malloc(strlen(path)+1000);
+                path_copy = (char*) malloc(strlen(path)+strlen(dir->d_name)+2);
                 memcpy(path_copy, path, strlen(path)+1);
                 if(path_copy[strlen(path_copy)-1] == '/'){
                     file_name = strcat(path_copy, (char*)dir->d_name);
@@ -48,7 +48,7 @@ void recursiveDir(char* path) {
             } else {
                 char* path_copy = NULL;
                 char* new_path = NULL;
-                path_copy = (char*) malloc(strlen(path)+1000);
+                path_copy = (char*) malloc(strlen(path)+strlen(dir->d_name)+2);
                 memcpy(path_copy, path, strlen(path)+1);
                 if(path_copy[strlen(path_copy)-1] == '/'){
                     new_path = strcat(path_copy, (char*)dir->d_name);
