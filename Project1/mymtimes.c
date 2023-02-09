@@ -15,14 +15,14 @@ static long past_hours[NUM_HOURS];
 static int mod_count[NUM_HOURS];
 
 /**
- * print time and date
+ * return time and date
 */
 char* getTimeString(long ts, char* timeString) {
     time_t nowtime;
     struct tm *nowtm;
     nowtime = ts;
     nowtm = localtime(&nowtime);
-    strftime(timeString, 100, "%a %b %T %Y", nowtm);
+    strftime(timeString, 100, "%a %b %d %T %Y", nowtm);
     return timeString;
 }
 
@@ -31,7 +31,7 @@ char* getTimeString(long ts, char* timeString) {
 */
 void printModCounts(void) {
     char* timeString = (char*) malloc(100);
-    for(int i = 0; i < NUM_HOURS; i++)
+    for(int i = NUM_HOURS-1; i >= 0; i--)
         printf("%s : %d\n", getTimeString(past_hours[i], timeString), mod_count[i]);
     free(timeString);
 }
@@ -54,7 +54,6 @@ void exploreDirs(char* path) {
             if(dir->d_type == DT_DIR) {
                 char* pathCopy = NULL;
                 char* newPath = NULL;
-
                 pathCopy = (char*) malloc(strlen(path)+1000);
                 memcpy(pathCopy, path, strlen(path)+1);
                 if(pathCopy[strlen(pathCopy)-1] == '/'){
@@ -67,10 +66,8 @@ void exploreDirs(char* path) {
                 free(pathCopy);
             } else {
                 struct stat result;
-                
                 char* pathCopy = NULL;
                 char* filename = NULL;
-
                 pathCopy = (char*) malloc(strlen(path)+1000);
                 memcpy(pathCopy, path, strlen(path)+1);
                 if(pathCopy[strlen(pathCopy)-1] == '/'){
@@ -79,7 +76,6 @@ void exploreDirs(char* path) {
                     filename = strcat(pathCopy, "/");
                     filename = strcat(filename, (char*)dir->d_name);
                 }
-
                 if(stat(filename, &result)==0) {
                     long mod_time = result.st_mtime;
                     long timeDiff = current_time - mod_time;
@@ -87,7 +83,6 @@ void exploreDirs(char* path) {
                     if(n < 24)
                         mod_count[n]++;
                 }
-
                 free(pathCopy);
             }
             
@@ -102,7 +97,7 @@ void exploreDirs(char* path) {
 /**
  * set current time and initiate variables
 */
-void setCurrentTime(void) {
+void setCurrentTime(void) { 
     struct timeval curr_time;
     gettimeofday(&curr_time, NULL);
     current_time = curr_time.tv_sec;
