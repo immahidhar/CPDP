@@ -43,12 +43,11 @@ void printDirs(char* path) {
                     newPath = dir->d_name;
                 } else {
                     memFlag = true;
-                    pathCopy = (char*) malloc(strlen(path)+100);
+                    pathCopy = (char*) malloc(strlen(path)+strlen(dir->d_name)+2);
+                    memcpy(pathCopy, path, strlen(path)+1);
                     if(pathCopy[strlen(path)-1] == '/') {
-                        memcpy(pathCopy, path, strlen(path)+strlen(dir->d_name)+1);
                         newPath = strcat(pathCopy, (char*)dir->d_name);
                     } else {
-                        memcpy(pathCopy, path, strlen(path)+strlen(dir->d_name)+2);
                         newPath = strcat(pathCopy, "/");
                         newPath = strcat(newPath, (char*)dir->d_name);
                     }
