@@ -50,7 +50,7 @@ void recursiveDir(char* path) {
                 char* new_path = NULL;
                 char* path_copy = NULL;
                 if(strcmp(path, ".") != 0) {
-                    path_copy = (char*) malloc(strlen(path)+100);
+                    path_copy = (char*) malloc(strlen(path)+strlen(dir->d_name)+2);
                     memcpy(path_copy, path, strlen(path)+1);
                     if(path_copy[strlen(path)-1] == '/'){
                         new_path = strcat(path_copy, (char*)dir->d_name);
