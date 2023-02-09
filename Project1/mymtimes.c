@@ -54,7 +54,7 @@ void exploreDirs(char* path) {
             if(dir->d_type == DT_DIR) {
                 char* pathCopy = NULL;
                 char* newPath = NULL;
-                pathCopy = (char*) malloc(strlen(path)+1000);
+                pathCopy = (char*) malloc(strlen(path)+strlen(dir->d_name)+2);
                 memcpy(pathCopy, path, strlen(path)+1);
                 if(pathCopy[strlen(pathCopy)-1] == '/'){
                     newPath = strcat(pathCopy, (char*)dir->d_name);
@@ -68,7 +68,7 @@ void exploreDirs(char* path) {
                 struct stat result;
                 char* pathCopy = NULL;
                 char* filename = NULL;
-                pathCopy = (char*) malloc(strlen(path)+1000);
+                pathCopy = (char*) malloc(strlen(path)+strlen(dir->d_name)+2);
                 memcpy(pathCopy, path, strlen(path)+1);
                 if(pathCopy[strlen(pathCopy)-1] == '/'){
                     filename = strcat(pathCopy, (char*)dir->d_name);
