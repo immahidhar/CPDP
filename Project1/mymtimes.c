@@ -1,45 +1,43 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdbool.h>
-#include <dirent.h>
-#include <time.h>
-#include <sys/time.h>
-#include <sys/stat.h>
-
-#define NUM_HOURS 24
-#define HR_IN_SECS 3600
-
-static long current_time;
-static long past_hours[NUM_HOURS];
-static int mod_count[NUM_HOURS];
+#include "mymtimes.h"
 
 /**
- * return time and date
-*/
-char* getTimeString(long ts, char* timeString) {
-    time_t nowtime;
-    struct tm *nowtm;
-    nowtime = ts;
-    nowtm = localtime(&nowtime);
-    strftime(timeString, 100, "%a %b %d %T %Y", nowtm);
-    return timeString;
+ * main
+ * @return exit code int
+ */
+int main(int argc, char *argv[]) {
+
+    initVariables();
+
+    char* path = NULL;
+    if(argc == 1) path = "."; 
+    else path = argv[1];
+    
+    exploreDirsRecursively(path);
+
+    printModifiedCounts();
+
+    return 0;
 }
 
 /**
- * print number of files modified
+ * set current time and initiate variables
 */
-void printModCounts(void) {
-    char* timeString = (char*) malloc(100);
-    for(int i = NUM_HOURS-1; i >= 0; i--)
-        printf("%s : %d\n", getTimeString(past_hours[i], timeString), mod_count[i]);
-    free(timeString);
+void initVariables(void) { 
+    struct timeval curr_time;
+    gettimeofday(&curr_time, NULL);
+    current_time = curr_time.tv_sec;
+    long time = current_time;
+    for(int i = 0; i < NUM_HOURS; i++) {
+        past_hours[i] = time - HR_IN_SECS;
+        time = time - HR_IN_SECS;
+    }
+    for(int i = 0; i < NUM_HOURS; i++) mod_count[i] = 0;
 }
 
 /**
  * explore dirs recursively and calculate number of files modified
 */
-void exploreDirs(char* path) {
+void exploreDirsRecursively(char* path) {
     DIR *d;
     struct dirent *dir;
     d = opendir(path);
@@ -62,7 +60,7 @@ void exploreDirs(char* path) {
                     newPath = strcat(pathCopy, "/");
                     newPath = strcat(newPath, (char*)dir->d_name);
                 }
-                exploreDirs(newPath);
+                exploreDirsRecursively(newPath);
                 free(pathCopy);
             } else {
                 struct stat result;
@@ -94,37 +92,23 @@ void exploreDirs(char* path) {
 }
 
 /**
- * set current time and initiate variables
+ * print number of files modified
 */
-void setCurrentTime(void) { 
-    struct timeval curr_time;
-    gettimeofday(&curr_time, NULL);
-    current_time = curr_time.tv_sec;
-    long time = current_time;
-    for(int i = 0; i < NUM_HOURS; i++) {
-        past_hours[i] = time - HR_IN_SECS;
-        time = time - HR_IN_SECS;
-    }
-    for(int i = 0; i < NUM_HOURS; i++)
-        mod_count[i] = 0;
+void printModifiedCounts(void) {
+    char* timeString = (char*) malloc(100);
+    for(int i = NUM_HOURS-1; i >= 0; i--)
+        printf("%s : %d\n", getTimeString(past_hours[i], timeString), mod_count[i]);
+    free(timeString);
 }
 
 /**
- * main
- * @return exit code int
- */
-int main(int argc, char *argv[]) {
-
-    setCurrentTime();
-
-    char* path = NULL;
-
-    if(argc == 1) path = "."; 
-    else path = argv[1];
-    
-    exploreDirs(path);
-
-    printModCounts();
-
-    return(0);
+ * return time and date
+*/
+char* getTimeString(long ts, char* timeString) {
+    time_t nowtime;
+    struct tm *nowtm;
+    nowtime = ts;
+    nowtm = localtime(&nowtime);
+    strftime(timeString, 100, "%a %b %d %T %Y", nowtm);
+    return timeString;
 }

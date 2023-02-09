@@ -1,9 +1,15 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/time.h>
-#include <sys/resource.h>
+#include "mytime.h"
+
+/**
+ * main
+ * @return exit code int
+ */
+int main(int argc, char *argv[]) {
+    if(argc == 1) {
+        fprintf(stderr, "syntax error - correct usage - mytime.x cmd args...");
+        return -1;
+    } else return executeCommand(argc, argv);
+}
 
 /**
  * execute the command passed in arg
@@ -31,22 +37,10 @@ int executeCommand(int argc, char *argv[]) {
         getrusage(RUSAGE_CHILDREN, &childUsage);
         long elapsedSeconds = childEnd.tv_sec - childBegin.tv_sec;
         long elapsedMicroseconds = childEnd.tv_usec - childBegin.tv_usec;
-        for(int i = 1; i < argc; i++)
-            printf("%s ", argv[i]);
+        for(int i = 1; i < argc; i++) printf("%s ", argv[i]);
         printf(":= %ld.%.6ds user  %ld.%.6ds system  %ld.%.6lds elapsed\n", 
         childUsage.ru_utime.tv_sec, childUsage.ru_utime.tv_usec, childUsage.ru_stime.tv_sec, 
         childUsage.ru_stime.tv_usec, elapsedSeconds, elapsedMicroseconds);
     }
     return 0;
-}
-
-/**
- * main
- * @return exit code int
- */
-int main(int argc, char *argv[]) {
-    if(argc == 1) {
-        fprintf(stderr, "syntax error - correct usage - mytime.x cmd args...");
-        return -1;
-    } else return executeCommand(argc, argv);
 }

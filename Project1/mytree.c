@@ -1,37 +1,32 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdbool.h>
-#include <dirent.h>
-
-static int dirDepth = 0;
+#include "mytree.h"
 
 /**
- * prints directory/file name
-*/
-void printDirName(struct dirent *dir) {
-    for(int i=0; i<dirDepth; i++) printf("|    ");
-    printf("|--- ");
-    if(dir->d_type == DT_DIR) printf("%s", strcat(dir->d_name, "/"));
-    else printf("%s", dir->d_name);
-    printf("\n");
+ * main
+ * @return exit code int
+ */
+int main(int argc, char *argv[]) {
+    char* path = NULL;
+    if(argc == 1) path = ".";
+    else path = argv[1];
+    printf("%s\n", path);
+    exploreDirsRecursively(path);
+    return(0);
 }
+
 
 /**
  * explore the path and print directory contents recursively
 */
-void printDirs(char* path) {
+void exploreDirsRecursively(char* path) {
     DIR *d;
     struct dirent *dir;
     d = opendir(path);
-
     if(d) {
         while((dir = readdir(d)) != NULL) {
             //skip unncecessary dirs
             if(dir == NULL || strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0 
             || dir->d_name[0] == '.')
                 continue;
-            
             if(dir->d_type != DT_DIR) {
                 printDirName(dir);
             } else {
@@ -53,11 +48,10 @@ void printDirs(char* path) {
                     }
                 }
                 dirDepth++;
-                printDirs(newPath);
+                exploreDirsRecursively(newPath);
                 dirDepth--;
                 if(memFlag) free(pathCopy);
             }
-            
         }
         closedir(d);
     } else {
@@ -65,20 +59,14 @@ void printDirs(char* path) {
     }
 }
 
+
 /**
- * main
- * @return exit code int
- */
-int main(int argc, char *argv[]) {
-
-    char* path = NULL;
-
-    if(argc == 1) path = ".";
-    else path = argv[1];
-
-    printf("%s\n", path);
-
-    printDirs(path);
-
-    return(0);
+ * prints directory/file name
+*/
+void printDirName(struct dirent *dir) {
+    for(int i=0; i<dirDepth; i++) printf("|    ");
+    printf("|--- ");
+    if(dir->d_type == DT_DIR) printf("%s", strcat(dir->d_name, "/"));
+    else printf("%s", dir->d_name);
+    printf("\n");
 }
