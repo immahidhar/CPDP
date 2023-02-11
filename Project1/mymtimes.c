@@ -45,8 +45,8 @@ void exploreDirsRecursively(char* path) {
     if(d) {   
         while((dir = readdir(d)) != NULL) {
 
-            if(dir == NULL || strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0 
-            || dir->d_name[0] == '.')
+            if(dir == NULL || strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0)
+            //|| dir->d_name[0] == '.')
                 continue;
 
             if(dir->d_type == DT_DIR) {
