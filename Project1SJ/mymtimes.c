@@ -23,8 +23,6 @@ void recursiveDir(char* path) {
                 continue;
             if(strcmp(dir->d_name, "..") == 0)
                 continue;
-            if(dir->d_name[0] == '.')
-                continue;
             if(dir->d_type != DT_DIR) {
                 struct stat stat_r;
                 char* path_copy = NULL;
