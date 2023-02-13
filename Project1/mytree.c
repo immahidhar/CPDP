@@ -32,23 +32,23 @@ void exploreDirsRecursively(char* path) {
             } else {
                 printDirName(dir);
                 bool memFlag = false;
-                char* pathCopy = NULL;
+                //char* pathCopy = NULL;
                 char* newPath = NULL;
                 if(strcmp(path, ".") == 0) {
                     newPath = dir->d_name;
                 } else {
                     memFlag = true;
-                    pathCopy = (char*) malloc(strlen(path)+strlen(dir->d_name)+2);
-                    memcpy(pathCopy, path, strlen(path)+1);
-                    if(pathCopy[strlen(path)-1] != '/') {
-                        newPath = strcat(pathCopy, "/");
+                    newPath = (char*) malloc(strlen(path)+strlen(dir->d_name)+2);
+                    memcpy(newPath, path, strlen(path)+1);
+                    if(newPath[strlen(path)-1] != '/') {
+                        newPath = strcat(newPath, "/");
                     }
                     newPath = strcat(newPath, (char*)dir->d_name);
                 }
                 dirDepth++;
                 exploreDirsRecursively(newPath);
                 dirDepth--;
-                if(memFlag) free(pathCopy);
+                if(memFlag) free(newPath);
             }
         }
         closedir(d);
