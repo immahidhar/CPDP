@@ -40,12 +40,10 @@ void exploreDirsRecursively(char* path) {
                     memFlag = true;
                     pathCopy = (char*) malloc(strlen(path)+strlen(dir->d_name)+2);
                     memcpy(pathCopy, path, strlen(path)+1);
-                    if(pathCopy[strlen(path)-1] == '/') {
-                        newPath = strcat(pathCopy, (char*)dir->d_name);
-                    } else {
+                    if(pathCopy[strlen(path)-1] != '/') {
                         newPath = strcat(pathCopy, "/");
-                        newPath = strcat(newPath, (char*)dir->d_name);
                     }
+                    newPath = strcat(newPath, (char*)dir->d_name);
                 }
                 dirDepth++;
                 exploreDirsRecursively(newPath);
@@ -66,7 +64,7 @@ void exploreDirsRecursively(char* path) {
 void printDirName(struct dirent *dir) {
     for(int i=0; i<dirDepth; i++) printf("|    ");
     printf("|--- ");
-    if(dir->d_type == DT_DIR) printf("%s", strcat(dir->d_name, "/"));
-    else printf("%s", dir->d_name);
+    printf("%s", dir->d_name);
+    if(dir->d_type == DT_DIR) printf("/");
     printf("\n");
 }
