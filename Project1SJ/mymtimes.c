@@ -6,10 +6,7 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 
-long c_t;
-long counts[24] = {0l};
-
-void recursiveDir(char* path) 
+int recursiveDir(char* path, long t, int count) 
 {
     DIR *d;
     struct dirent *dir;
@@ -48,11 +45,9 @@ void recursiveDir(char* path)
                     file_name = strcat(file_name, (char*)dir->d_name);
                 }
                 if(stat(file_name, &stat_r)==0) {
-                    long mT = stat_r.st_mtime;
-                    long tD = c_t - mT;
-                    int n = tD / 3600;
-                    if(n>=0 && n < 24) {
-                        counts[n]++;
+                    if(stat_r.st_mtime >= t && stat_r.st_mtime <= t + 3600)
+                    {
+                        count++;
                     }
                 }
                 free(path_copy);
@@ -72,16 +67,13 @@ void recursiveDir(char* path)
                     new_path = strcat(path_copy, "/");
                     new_path = strcat(new_path, (char*)dir->d_name);
                 }
-                recursiveDir(new_path);
+                count += recursiveDir(new_path, t, 0);
                 free(path_copy);
             }
         }
         closedir(d);
-    } 
-    else 
-    {
-        fprintf(stderr, "Error accessing directory - %s\n", path);
     }
+    return count;
 }
 
 int main(int argc, char **argv) 
@@ -89,7 +81,6 @@ int main(int argc, char **argv)
 
     struct timespec curr_time;
     clock_gettime(CLOCK_REALTIME, &curr_time);
-    c_t = curr_time.tv_sec;
 
     char* path = NULL;
     if(argc == 1) 
@@ -101,19 +92,18 @@ int main(int argc, char **argv)
         path = argv[1];
     }
 
-    recursiveDir(path);
-
     char* ts = (char*) malloc(200);
-    long t = c_t;
-    for(int i = 24-1; i >= 0; i--) 
+    long t = curr_time.tv_sec;
+    t = t - (3600*24);
+    for(int i = 0; i < 24; i++) 
     {
         time_t now_time;
         struct tm *now;
         now_time = t;
         now = localtime(&now_time);
         strftime(ts, 200, "%a %b %d %T %Y", now);
-        printf("%s : %ld\n", ts, counts[i]);
-        t = t - 3600;
+        printf("%s : %d\n", ts, recursiveDir(path, t, 0));
+        t = t + 3600;
     }
     free(ts);
 
