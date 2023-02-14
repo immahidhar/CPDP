@@ -30,3 +30,8 @@ To compile mymtimes execute the following in terminal
 ```
 make mymtimes
 ```
+
+**To cleanup the compiled executables, execute the following in terminal**
+```
+make clean
+```
