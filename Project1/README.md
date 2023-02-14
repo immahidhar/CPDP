@@ -8,7 +8,7 @@ Project: 1
 
 There are three programs in this project
 
-**To compile all three programs at a time, execute the following in terminal
+**To compile all three programs at a time, execute the following in terminal**
 ```
 make
 ```
