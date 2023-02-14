@@ -24,15 +24,27 @@ To compile mytree execute the following in terminal
 ```
 make mytree
 ```
+To run mytree execute the following in terminal
+```
+./mytree.x args...
+```
 
 ## mytime:
 To compile mytime execute the following in terminal
 ```
 make mytime
 ```
+To run mytime execute the following in terminal
+```
+./mytime.x args...
+```
 
 ## mymtimes:
 To compile mymtimes execute the following in terminal
 ```
 make mymtimes
+```
+To run mymtimes execute the following in terminal
+```
+./mymtimes.x args...
 ```
