@@ -6,7 +6,7 @@
  */
 int main(int argc, char *argv[]) {
     if(argc == 1) {
-        fprintf(stderr, "syntax error - correct usage - mytime.x cmd args...");
+        fprintf(stderr, "syntax error - correct usage - mytime.x cmd args...\n");
         return -1;
     } else return executeCommand(argc, argv);
 }
@@ -21,7 +21,7 @@ int executeCommand(int argc, char *argv[]) {
     struct timeval childBegin, childEnd;
     gettimeofday(&childBegin, 0);
     if ((pid = fork()) == -1) {
-        fprintf(stderr, "Error while forking!");
+        perror("fork");
         return -1;
     }
     if (pid == 0) {

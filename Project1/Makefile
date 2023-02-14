@@ -24,4 +24,4 @@ mymtimes: mymtimes.c
 	$(C) $(CFLAGS) -o mymtimes.x mymtimes.o
 
 clean:
-	-rm -f *.o *.x
+	-rm -rf *.out *.o *.x

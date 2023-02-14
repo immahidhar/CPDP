@@ -32,7 +32,6 @@ void exploreDirsRecursively(char* path) {
             } else {
                 printDirName(dir);
                 bool memFlag = false;
-                //char* pathCopy = NULL;
                 char* newPath = NULL;
                 if(strcmp(path, ".") == 0) {
                     newPath = dir->d_name;
