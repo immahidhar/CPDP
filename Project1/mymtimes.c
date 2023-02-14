@@ -50,37 +50,31 @@ void exploreDirsRecursively(char* path) {
                 continue;
 
             if(dir->d_type == DT_DIR) {
-                char* pathCopy = NULL;
                 char* newPath = NULL;
-                pathCopy = (char*) malloc(strlen(path)+strlen(dir->d_name)+2);
-                memcpy(pathCopy, path, strlen(path)+1);
-                if(pathCopy[strlen(pathCopy)-1] == '/'){
-                    newPath = strcat(pathCopy, (char*)dir->d_name);
-                } else {
-                    newPath = strcat(pathCopy, "/");
-                    newPath = strcat(newPath, (char*)dir->d_name);
+                newPath = (char*) malloc(strlen(path)+strlen(dir->d_name)+2);
+                memcpy(newPath, path, strlen(path)+1);
+                if(newPath[strlen(newPath)-1] != '/'){
+                    newPath = strcat(newPath, "/");
                 }
+                newPath = strcat(newPath, (char*)dir->d_name);
                 exploreDirsRecursively(newPath);
-                free(pathCopy);
+                free(newPath);
             } else {
                 struct stat result;
-                char* pathCopy = NULL;
                 char* filename = NULL;
-                pathCopy = (char*) malloc(strlen(path)+strlen(dir->d_name)+2);
-                memcpy(pathCopy, path, strlen(path)+1);
-                if(pathCopy[strlen(pathCopy)-1] == '/'){
-                    filename = strcat(pathCopy, (char*)dir->d_name);
-                } else {
-                    filename = strcat(pathCopy, "/");
-                    filename = strcat(filename, (char*)dir->d_name);
+                filename = (char*) malloc(strlen(path)+strlen(dir->d_name)+2);
+                memcpy(filename, path, strlen(path)+1);
+                if(filename[strlen(filename)-1] != '/'){
+                    filename = strcat(filename, "/");
                 }
+                filename = strcat(filename, (char*)dir->d_name);
                 if(stat(filename, &result)==0) {
                     long mod_time = result.st_mtime;
                     long timeDiff = current_time - mod_time;
                     int n = timeDiff / HR_IN_SECS;
                     if(n >= 0 && n < 24) mod_count[n]++;
                 }
-                free(pathCopy);
+                free(filename);
             }
             
         }

@@ -7,21 +7,28 @@
 
 #define BILLION  1000000000.0
 
-int main(int argc, char **argv) {
-    if(argc == 1) {
+int main(int argc, char **argv) 
+{
+    if(argc == 1) 
+    {
         fprintf(stderr, "No command provided to time");
         return -1;
-    } else {
+    } 
+    else 
+    {
         int pid = 0, stat = 0;
         struct rusage rusg;
         struct timespec start, end;
         struct timeval stime, utime;
         clock_gettime(CLOCK_REALTIME, &start);
-        if ((pid = fork()) == 0) {
+        if ((pid = fork()) == 0) 
+        {
             execvp(argv[1], &argv[1]);
             fprintf(stderr, "Error executing command - %s\n", argv[1]);
             exit(-1);
-        } else {
+        } 
+        else 
+        {
             wait(&stat);
             clock_gettime(CLOCK_REALTIME, &end);
             double elapsed = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / BILLION;
