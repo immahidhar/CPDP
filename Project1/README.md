@@ -13,6 +13,11 @@ There are three programs in this project
 make
 ```
 
+**To cleanup the compiled executables, execute the following in terminal**
+```
+make clean
+```
+
 # mytree:
 To compile mytree execute the following in terminal
 ```
@@ -29,9 +34,4 @@ make mytime
 To compile mymtimes execute the following in terminal
 ```
 make mymtimes
-```
-
-**To cleanup the compiled executables, execute the following in terminal**
-```
-make clean
 ```
