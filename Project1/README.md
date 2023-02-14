@@ -1,10 +1,13 @@
 # Project 1
 Class: COP 5570
+
 Professor: Zhenhai Duan
+
 Name: Mahidhar Reddy Narala (MN22L)
 
 
 There are three programs in this project.
+
 
 **To compile all three programs at a time, execute the following in terminal**
 ```
@@ -16,19 +19,19 @@ make
 make clean
 ```
 
-# mytree:
+## mytree:
 To compile mytree execute the following in terminal
 ```
 make mytree
 ```
 
-# mytime:
+## mytime:
 To compile mytime execute the following in terminal
 ```
 make mytime
 ```
 
-# mymtimes:
+## mymtimes:
 To compile mymtimes execute the following in terminal
 ```
 make mymtimes
