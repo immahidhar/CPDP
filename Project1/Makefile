@@ -1,9 +1,3 @@
-# Name: Mahidhar Reddy Narala (MN22L)
-# Class: COP 5570
-# Professor: Zhenhai Duan
-# Project: 1
-# Description: This is the Project 1 makefile.
-
 C = gcc
 CFLAGS = -std=gnu99 -Wall -pedantic -g
 

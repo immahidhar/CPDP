@@ -1,7 +1,24 @@
-# Name: Mahidhar Reddy Narala (MN22L)
-# Class: COP 5570
-# Professor: Zhenhai Duan
-# Project: 1
-# Description: This is the Project 1 makefile.
+Name: Mahidhar Reddy Narala (MN22L)
+Class: COP 5570
+Professor: Zhenhai Duan
+Project: 1
 
-To compile and build the programs just type in "make" and run the command. It will compile and build all programs by default.
+There are three programs in this project
+
+# mytree:
+To compile mytree execute the following in terminal
+'''
+make mytree
+'''
+
+# mytime:
+To compile mytime execute the following in terminal
+'''
+make mytime
+'''
+
+# mymtimes:
+To compile mymtimes execute the following in terminal
+'''
+make mymtimes
+'''
