@@ -8,6 +8,11 @@ Project: 1
 
 There are three programs in this project
 
+To compile all three programs at a time, execute the following in terminal
+```
+make
+```
+
 # mytree:
 To compile mytree execute the following in terminal
 ```
