@@ -1,12 +1,10 @@
+# Project 1
+Class: COP 5570
+Professor: Zhenhai Duan
 Name: Mahidhar Reddy Narala (MN22L)
 
-Class: COP 5570
 
-Professor: Zhenhai Duan
-
-Project: 1
-
-There are three programs in this project
+There are three programs in this project.
 
 **To compile all three programs at a time, execute the following in terminal**
 ```
