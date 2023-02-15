@@ -23,7 +23,9 @@ void execute_cmd(tokenlist *tokens) {
  * @return
  */
 bool check_if_bif(char *command) {
-    for (int i = 0; i < NUMOFBIFUNS; i++) if (strcmp(command, commands[i]) == 0) return true;
+    for (int i = 0; i < NUMOFBIFUNS; i++) 
+        if (strcmp(command, commands[i]) == 0) 
+            return true;
     return false;
 }
 

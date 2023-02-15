@@ -10,6 +10,9 @@ void process_command(tokenlist *tokens) {
         execute_cmd(tokens);
     } else if (checkIfIORedirect(tokens)) {
         execute_io_redirect_command(tokens, true);
+    } else if (checkIfPipe(tokens)) {
+        //TODO: implement piping
+        printf("piping isn't implemented yet!\n");
     } else execute_command(tokens, true);
 
 }
@@ -86,4 +89,14 @@ void execute_io_redirect_command(tokenlist *tokens, bool should_fork) {
         if (fdi != -1) close(fdi);
         waitpid(pid, NULL, 0);
     }
+}
+
+/**
+ * Check if we need to do piping
+ * @param tokens
+ * @return
+ */
+bool checkIfPipe(tokenlist *tokens) {
+    if (token_present(tokens, "|") != -1) return true;
+    else return false;
 }
