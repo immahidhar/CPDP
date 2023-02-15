@@ -14,6 +14,7 @@ int main() {
         for(int i = 0; i < tokens->size; i++){
             printf("%s\n", tokens->items[i]);
         }
+        if (tokens->size != 0) execute_command(tokens);
         free(input);
     }
     return 0;
