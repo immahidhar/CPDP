@@ -69,3 +69,20 @@ void add_token(tokenlist *tokens, char *item) {
     strcpy(tokens->items[i], item);
     tokens->size += 1;
 }
+
+/**
+ * Gets environment variable value
+ * NOTE: the returned value's memory should be freed up by the caller function
+ * @param env_var
+ * @return env_var value
+ */
+char *get_env_val(char *env_var) {
+    char *temp;
+    temp = getenv(env_var);
+    if (temp == NULL) {
+        temp = "";
+    }
+    char *env_val = (char *) calloc(strlen(temp) + 1, 1);
+    strcpy(env_val, temp);
+    return env_val;
+}
