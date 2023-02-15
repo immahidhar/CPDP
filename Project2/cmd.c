@@ -1,12 +1,12 @@
 #include "cmd.h"
 
-static const char *commands[3] = {"myexit", "mycd", "mypwd"};
+static const char *commands[NUMOFBIFUNS] = {"myexit", "mycd", "mypwd"};
 
 /**
  * Execute built-in function
  * @param tokens
  */
-void execute_command(tokenlist *tokens) {
+void execute_cmd(tokenlist *tokens) {
     char *command = tokens->items[0];
     if (strcmp(command, commands[0]) == 0) {
         execute_exit();
@@ -14,28 +14,17 @@ void execute_command(tokenlist *tokens) {
         execute_cd(tokens);
     } else if (strcmp(command, commands[2]) == 0) {
         execute_pwd();
-    } else execute_cmd(tokens, true);
+    }
 }
 
 /**
- * Assuming first token is the file that can be found in PATH to be executed, 
- * and all following tokens are args to the command.
- * We execute this with a fork
- * @param tokens
- * @param should_fork
-*/
-void execute_cmd(tokenlist *tokens, bool should_fork) {
-    int pid = 0;
-    if(should_fork) pid = fork();
-    if (pid == 0) {
-        // In child process
-        execvp(tokens->items[0], tokens->items);
-        fprintf(stderr, "Command not found - %s\n", tokens->items[0]);
-        exit(-1);
-    } else {
-        // In parent process
-        waitpid(pid, NULL, 0);
-    }
+ * Check if command is built-in function i.e. one of the above 3
+ * @param command
+ * @return
+ */
+bool check_if_bif(char *command) {
+    for (int i = 0; i < NUMOFBIFUNS; i++) if (strcmp(command, commands[i]) == 0) return true;
+    return false;
 }
 
 /**

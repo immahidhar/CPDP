@@ -71,6 +71,54 @@ void add_token(tokenlist *tokens, char *item) {
 }
 
 /**
+ * remove elements from tokenlist
+ * @param tokens - token list
+ * @param rm_tokens - list of tokens to be removed
+ * @param rm_tokens_size - number of tokens to be removed
+ */
+void remove_tokens(tokenlist *tokens, char **rm_tokens, int rm_tokens_size) {
+    for (int j = 0; j < rm_tokens_size; j++) {
+        int tokens_size = tokens->size;
+        for (int i = 0; i < tokens_size; i++) {
+            if (strcmp(tokens->items[i], rm_tokens[j]) == 0) {
+                // remove ith element
+                for (int k = i; k < tokens_size; k++) {
+                    char *temp = tokens->items[k];
+                    tokens->items[k] = tokens->items[k + 1];
+                    if (k == i) free(temp);
+                }
+                tokens->size = tokens_size - 1;
+                break;
+            }
+        }
+
+    }
+}
+
+/**
+ * Check if the token passed is present in the token list
+ * @param tokens - token list
+ * @param token - token to be searched
+ * @return - index of token found or -1 if not
+ */
+int token_present(tokenlist *tokens, char *token) {
+    for (int i = 0; i < tokens->size; i++)
+        if (strcmp(tokens->items[i], token) == 0) return i;
+    return -1;
+}
+
+/**
+ * Free up the tokenlist memory
+ * @param tokens
+ */
+void free_tokens(tokenlist *tokens) {
+    for (int i = 0; i < tokens->size; i++)
+        free(tokens->items[i]);
+    free(tokens->items);
+    free(tokens);
+}
+
+/**
  * Gets environment variable value
  * NOTE: the returned value's memory should be freed up by the caller function
  * @param env_var
