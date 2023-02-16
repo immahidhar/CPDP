@@ -127,9 +127,7 @@ void free_tokens(tokenlist *tokens) {
 char *get_env_val(char *env_var) {
     char *temp;
     temp = getenv(env_var);
-    if (temp == NULL) {
-        temp = "";
-    }
+    if (temp == NULL) temp = "";
     char *env_val = (char *) calloc(strlen(temp) + 1, 1);
     strcpy(env_val, temp);
     return env_val;
