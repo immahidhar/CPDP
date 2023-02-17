@@ -88,34 +88,88 @@ void execute_io_redirect_command(tokenlist *tokens, bool should_fork) {
 /**
  * Piping implementation
  * @param tokens
+ * @param pipeCount
  * @param should_fork
  */
-void executePiping(tokenlist *tokens, int count,  bool shouled_fork) {
-    //TODO: implement piping
-    printf("piping isn't implemented yet! %d\n", count);
-    int cmdCount = count + 1;
+void executePiping(tokenlist *tokens, int pipeCount,  bool shouled_fork) {
+    int cmdCount = pipeCount + 1;
     tokenlist *commands[cmdCount];
     int cmdIndex = 0;
     tokenlist *command = new_tokenlist();
-    printf("token size - %d\n", tokens->size);
     for(int i = 0; i < tokens->size; i++) {
-        printf("checking token %s\n", tokens->items[i]);
         if(strcmp(tokens->items[i], "|") == 0) {
             commands[cmdIndex] = command;
             command = new_tokenlist();
             cmdIndex++;
         } else {
-            printf("adding token %s\n", tokens->items[i]);
             add_token(command, tokens->items[i]);
         }
     }
     commands[cmdIndex] = command;
+
     /*for(int j = 0; j < cmdCount; j++) {
-        printf("Command1:\n");
+        printf("Command%d:\n", j);
         for(int i = 0; i < commands[j]->size; i++)
             printf("%s\t", commands[j]->items[i]);
         printf("\n");
     }*/
-    
+
+    int p_fds[pipeCount][2];
+    for(int i = 0; i < pipeCount; i++) {
+        pipe(p_fds[i]);
+    }
+    for(int cmdIndex = 0, pipeIndex = 0; cmdIndex < cmdCount; cmdIndex++) {
+        printf("Executing command %d %d, %s\n", cmdIndex, pipeIndex, commands[cmdIndex]->items[0]);
+        int pid = fork();
+        if(pid == 0) {
+            // child process
+            if(cmdIndex == 0 || cmdIndex%2 == 0) {
+                // close stdout and connect it to read end of next pipe
+                if(cmdIndex != cmdCount-1) {
+                    dup2(p_fds[pipeIndex][1], STDOUT_FILENO);
+                    close(p_fds[pipeIndex][0]);
+                    close(p_fds[pipeIndex][1]);
+                }
+                if(cmdIndex != 0) {
+                    // close stdin and connect it to write end of previous pipe
+                    dup2(p_fds[pipeIndex][0], STDIN_FILENO);
+                    close(p_fds[pipeIndex][1]);
+                    close(p_fds[pipeIndex][0]);
+                }
+                // execute command 1
+                execute_command(commands[cmdIndex], false);
+            } else {
+                // close stdin and connect it to write end of previous pipe
+                dup2(p_fds[pipeIndex][0], STDIN_FILENO);
+                close(p_fds[pipeIndex][1]);
+                close(p_fds[pipeIndex][0]);
+                if (cmdIndex != cmdCount - 1) {
+                    // close stdout and connect it to read end of next pipe
+                    dup2(p_fds[pipeIndex+1][1], STDOUT_FILENO);
+                    close(p_fds[pipeIndex+1][0]);
+                    close(p_fds[pipeIndex+1][1]);
+                }
+                // execute command 2
+                execute_command(commands[cmdIndex], false);
+            }
+            exit(1);
+        } else {
+            // parent process
+            if(cmdIndex == 0 || cmdIndex%2 == 0) {
+                close(p_fds[pipeIndex][1]);
+                if(cmdIndex != 0) {
+                    close(p_fds[pipeIndex][0]);
+                    pipeIndex++;
+                }
+            } else {
+                close(p_fds[pipeIndex][0]);
+                if (cmdIndex != cmdCount - 1) {
+                    close(p_fds[pipeIndex+1][1]);
+                    pipeIndex++;
+                }
+            }
+            waitpid(pid, NULL, 0);
+        }
+    }
     
 }
