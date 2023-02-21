@@ -20,6 +20,8 @@ char *get_char_input(void) {
         bufsize += addby;
         if (newln != NULL) break;
     }
+    // ctrl + D - exit on EOF 
+    if(buffer == NULL) exit(0);
     buffer = (char *) realloc(buffer, bufsize + 1);
     buffer[bufsize] = 0;
     return buffer;
