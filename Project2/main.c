@@ -5,6 +5,7 @@
  * @return exit code
  */
 int main() {
+    addPWDToPATH();
     // infinite loop
     while (1) {
         printf("$ ");

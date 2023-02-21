@@ -134,3 +134,13 @@ char *get_env_val(char *env_var) {
     strcpy(env_val, temp);
     return env_val;
 }
+
+void addPWDToPATH(void) {
+    char *path = get_env_val("PATH");
+    char *pwd = get_env_val("PWD");
+    path = (char*) realloc(path, strlen(path)+strlen(pwd)+2);
+    strcat(path, ":");
+    strcat(path, pwd);
+    //printf("%s\n", path);
+    setenv("PATH", path, 1);
+}

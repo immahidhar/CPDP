@@ -1,7 +1,8 @@
 C = gcc
 CFLAGS = -std=gnu99 -Wall -pedantic -g
 NAME = mytoolkit
-TARGETS = clean processor executor cmd util main build
+OTHER = mypwd
+TARGETS = clean processor executor cmd util main mypwd build
 BINARIES = processor.o executor.o cmd.o util.o main.o
 
 default: $(TARGETS)
@@ -21,8 +22,11 @@ util: util.c
 cmd: cmd.c
 	$(C) $(CFLAGS) -c cmd.c
 
+mypwd: mypwd.c
+	$(C) $(CFLAGS) mypwd.c -o mypwd
+
 build:
 	$(C) $(CFLAGS) -o $(NAME) $(BINARIES)
 
 clean:
-	-rm -f *.out *.o *.x $(NAME)
+	-rm -rf *.out *.o *.x *.dSYM $(NAME) $(OTHER)

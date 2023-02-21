@@ -22,5 +22,6 @@ void remove_tokens(tokenlist *tokens, char **rm_tokens, int rm_tokens_size);
 int token_present(tokenlist *tokens, char *token);
 void free_tokens(tokenlist *tokens);
 char *get_env_val(char *env_var);
+void addPWDToPATH(void);
 
 #endif

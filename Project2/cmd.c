@@ -13,7 +13,8 @@ void execute_cmd(tokenlist *tokens) {
     } else if (strcmp(command, commands[1]) == 0) {
         execute_cd(tokens);
     } else if (strcmp(command, commands[2]) == 0) {
-        execute_pwd();
+        //execute_pwd();
+        execute_command(tokens, true);
     }
 }
 

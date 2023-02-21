@@ -4,6 +4,7 @@
 #define NUMOFBIFUNS 3
 
 #include "util.h"
+#include "executor.h"
 
 void execute_cmd(tokenlist *tokens);
 bool check_if_bif(char *command);
