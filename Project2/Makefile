@@ -1,8 +1,8 @@
 C = gcc
 CFLAGS = -std=gnu99 -Wall -pedantic -g
 NAME = mytoolkit
-OTHER = mypwd
-TARGETS = clean processor executor cmd util main mypwd build
+OTHER = mypwd mytimeout
+TARGETS = clean processor executor cmd util main mypwd mytimeout build
 BINARIES = processor.o executor.o cmd.o util.o main.o
 
 default: $(TARGETS)
@@ -24,6 +24,9 @@ cmd: cmd.c
 
 mypwd: mypwd.c
 	$(C) $(CFLAGS) mypwd.c -o mypwd
+
+mytimeout: mytimeout.c
+	$(C) $(CFLAGS) mytimeout.c -o mytimeout
 
 build:
 	$(C) $(CFLAGS) -o $(NAME) $(BINARIES)
