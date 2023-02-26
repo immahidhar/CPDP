@@ -6,6 +6,7 @@
  */
 int main() {
     addPWDToPATH();
+    setpgid(0, 0);
     // infinite loop
     while (1) {
         printf("$ ");
