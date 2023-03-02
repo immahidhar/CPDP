@@ -12,7 +12,7 @@ void process_command(tokenlist *tokens) {
     } else if (checkIfIORedirect(tokens)) {
         execute_io_redirect_command(tokens, true);
     } else if (checkIfPipe(tokens) > 0) {
-        executePiping(tokens, checkIfPipe(tokens), false);
+        executePiping(tokens, checkIfPipe(tokens));
     } else execute_command(tokens, true);
 
 }

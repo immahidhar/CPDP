@@ -91,7 +91,7 @@ void execute_io_redirect_command(tokenlist *tokens, bool should_fork) {
  * @param pipeCount
  * @param should_fork
  */
-void executePiping(tokenlist *tokens, int pipeCount,  bool shouled_fork) {
+void executePiping(tokenlist *tokens, int pipeCount) {
     int cmdCount = pipeCount + 1;
     tokenlist *commands[cmdCount];
     int cmdIndex = 0;
