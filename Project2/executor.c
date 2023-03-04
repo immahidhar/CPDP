@@ -119,10 +119,10 @@ void executePiping(tokenlist *tokens, int pipeCount) {
         pipe(p_fds[i]);
     }
     for(int cmdIndex = 0, pipeIndex = 0; cmdIndex < cmdCount; cmdIndex++) {
-        printf("Executing command %d %d, %s\n", cmdIndex, pipeIndex, commands[cmdIndex]->items[0]);
+        /*printf("Executing command %d %d, %s\n", cmdIndex, pipeIndex, commands[cmdIndex]->items[0]);
         for(int i = 0; i < commands[cmdIndex]->size; i++)
             printf("%s\t", commands[cmdIndex]->items[i]);
-        printf("\n");
+        printf("\n");*/
         int pid = fork();
         if(pid == 0) {
             // child process

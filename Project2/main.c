@@ -1,10 +1,16 @@
 #include "main.h"
 
+void eof_sig_handler(int signum) {
+  // kill process
+  exit(0);
+}
+
 /**
  * Entry point
  * @return exit code
  */
 int main() {
+    signal( SIGINT, eof_sig_handler);
     addPWDToPATH();
     setpgid(0, 0);
     // infinite loop

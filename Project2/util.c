@@ -7,14 +7,15 @@
 char *get_char_input(void) {
     char *buffer = NULL;
     int bufsize = 0;
-    char line[5];
-    while (fgets(line, 5, stdin) != NULL) {
+    int num = 80;
+    char line[num];
+    while (fgets(line, num, stdin) != NULL) {
         int addby = 0;
         char *newln = strchr(line, '\n');
         if (newln != NULL)
             addby = newln - line;
         else
-            addby = 5 - 1;
+            addby = num - 1;
         buffer = (char *) realloc(buffer, bufsize + addby);
         memcpy(&buffer[bufsize], line, addby);
         bufsize += addby;
