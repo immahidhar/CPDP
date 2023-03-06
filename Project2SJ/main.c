@@ -185,7 +185,7 @@ void executeWithPipes(char **args) {
     }
     //printf("%d\n", pipe_count);
     char *filename1 = "tmp";
-    //char *filename2 = "tmp2";
+    char *filename2 = "tmp2";
     FILE *tmpFile;
     char *pipe_command[120];
     int argCounter = 0;
@@ -203,19 +203,19 @@ void executeWithPipes(char **args) {
             int pid = fork();
             if(pid == 0) {
                 //child
-                //if(flag == 0) {
+                if(flag == 0) {
                     tmpFile = fopen(filename1, "w");
                     int ofno = fileno(tmpFile);
                     close(STDOUT_FILENO);
                     dup2(ofno, STDOUT_FILENO);
                     close(ofno);
-                /*} else {
+                } else {
                     tmpFile = fopen(filename2, "w");
                     int ofno = fileno(tmpFile);
                     close(STDOUT_FILENO);
                     dup2(ofno, STDOUT_FILENO);
                     close(ofno);
-                }*/
+                }
                 if(flag != 0) {
                     tmpFile = fopen(filename1, "r");
                     int ifno = fileno(tmpFile);
@@ -242,7 +242,11 @@ void executeWithPipes(char **args) {
     int pid = fork();
     if(pid == 0) {
         //child
-        tmpFile = fopen(filename1, "r");
+        if(pipe_count == 1) {
+            tmpFile = fopen(filename1, "r");
+        } else {
+            tmpFile = fopen(filename2, "r");
+        }
         int ifno = fileno(tmpFile);
         close(STDIN_FILENO);
         dup2(ifno, STDIN_FILENO);
