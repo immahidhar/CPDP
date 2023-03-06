@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <signal.h>
+#include <sys/wait.h>
 
 // child pid
 int cid = 0;
