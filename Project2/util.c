@@ -7,7 +7,7 @@
 char *get_char_input(void) {
     char *buffer = NULL;
     int bufsize = 0;
-    int num = 80;
+    int num = 5;
     char line[num];
     while (fgets(line, num, stdin) != NULL) {
         int addby = 0;

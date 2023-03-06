@@ -3,6 +3,4 @@
 
 #include "processor.h"
 
-void eof_sig_handler(int signum);
-
 #endif
