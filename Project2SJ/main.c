@@ -51,20 +51,6 @@ void mypwd() {
     }
 }
 
-/*void addTimeoutToPath() {
-    char *temp = getenv("PATH");
-    if (temp == NULL) temp = "";
-    char *path = (char *) calloc(strlen(temp) + 1, 1);
-    strcpy(path, temp);
-    temp = getenv("CWD");
-    if (temp == NULL) temp = "";
-    char *cwd = (char *) calloc(strlen(temp) + 1, 1);
-    path = (char*) realloc(path, strlen(path)+strlen(cwd)+2);
-    strcat(path, ":");
-    strcat(path, cwd);
-    setenv("PATH", path, 1);
-}*/
-
 int isIPresent(char **args) {
     for(int i = 0; i < args_count; i++) {
         if(strcmp(args[i], "<") == 0) {
@@ -112,8 +98,6 @@ void executeWithIO(char **args) {
                 break;
             }
         }
-        /*for(int j = 0; j < args_count; j++) printf("%s\n", args[j]);
-        printf("%d\n", args_count);*/
     }
     if(oIndex != -1) {
         oIndex = isOPresent(args);
@@ -134,11 +118,7 @@ void executeWithIO(char **args) {
                 args_count--;
             }
         }
-        /*for(int j = 0; j < args_count; j++) printf("%s\n", args[j]);
-        printf("%d\n", args_count);*/
     }
-    /*for(int j = 0; j < args_count; j++) printf("%s\n", args[j]);
-    printf("%d\n", args_count);*/
     int pid = fork();
     if(pid == 0) {
         if(iIndex != -1) {
@@ -183,7 +163,6 @@ void executeWithPipes(char **args) {
         printf("Only 2 pipes are supported\n");
         return;
     }
-    //printf("%d\n", pipe_count);
     char *filename1 = "tmp";
     char *filename2 = "tmp2";
     FILE *tmpFile;
@@ -196,9 +175,6 @@ void executeWithPipes(char **args) {
             argCounter++;
         } else {
             pipe_command[argCounter] = NULL;
-            /*for(int j = 0; j < argCounter; j++)
-                printf("%s ", pipe_command[j]);
-            printf("\n");*/
             // fork and exec
             int pid = fork();
             if(pid == 0) {
@@ -235,9 +211,6 @@ void executeWithPipes(char **args) {
         }
     }
     pipe_command[argCounter] = NULL;
-    /*for(int j = 0; j < argCounter; j++)
-        printf("%s ", pipe_command[j]);
-    printf("\n");*/
     // fork and exec
     int pid = fork();
     if(pid == 0) {
@@ -262,9 +235,6 @@ void executeWithPipes(char **args) {
 
 
 int main() {
-
-    //addTimeoutToPath();
-
     char input[120];
     char *args[120];
 
