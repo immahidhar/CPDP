@@ -8,6 +8,7 @@
 #define MAX_ARGS 100
 
 int args_count = 0;
+int pipe_count = 0;
 
 // Parse the input string to extract the command and its arguments
 void parse_input(char *input, char **args) {
@@ -50,7 +51,7 @@ void mypwd() {
     }
 }
 
-void addTimeoutToPath() {
+/*void addTimeoutToPath() {
     char *temp = getenv("PATH");
     if (temp == NULL) temp = "";
     char *path = (char *) calloc(strlen(temp) + 1, 1);
@@ -62,7 +63,7 @@ void addTimeoutToPath() {
     strcat(path, ":");
     strcat(path, cwd);
     setenv("PATH", path, 1);
-}
+}*/
 
 int isIPresent(char **args) {
     for(int i = 0; i < args_count; i++) {
@@ -111,8 +112,8 @@ void executeWithIO(char **args) {
                 break;
             }
         }
-        for(int j = 0; j < args_count; j++) printf("%s\n", args[j]);
-        printf("%d\n", args_count);
+        /*for(int j = 0; j < args_count; j++) printf("%s\n", args[j]);
+        printf("%d\n", args_count);*/
     }
     if(oIndex != -1) {
         oIndex = isOPresent(args);
@@ -133,11 +134,11 @@ void executeWithIO(char **args) {
                 args_count--;
             }
         }
-        for(int j = 0; j < args_count; j++) printf("%s\n", args[j]);
-        printf("%d\n", args_count);
+        /*for(int j = 0; j < args_count; j++) printf("%s\n", args[j]);
+        printf("%d\n", args_count);*/
     }
-    for(int j = 0; j < args_count; j++) printf("%s\n", args[j]);
-    printf("%d\n", args_count);
+    /*for(int j = 0; j < args_count; j++) printf("%s\n", args[j]);
+    printf("%d\n", args_count);*/
     int pid = fork();
     if(pid == 0) {
         if(iIndex != -1) {
@@ -167,12 +168,101 @@ void executeWithIO(char **args) {
 
 }
 
+int isPipePresent(char **args) {
+    pipe_count = 0;
+    for(int i = 0; i< args_count; i++) {
+        if(strcmp(args[i], "|") == 0) {
+            pipe_count++;
+        }
+    }
+    return pipe_count;
+}
+
+void executeWithPipes(char **args) {
+    if(pipe_count > 2) {
+        printf("Only 2 pipes are supported\n");
+        return;
+    }
+    //printf("%d\n", pipe_count);
+    char *filename1 = "tmp";
+    //char *filename2 = "tmp2";
+    FILE *tmpFile;
+    char *pipe_command[120];
+    int argCounter = 0;
+    int flag = 0;
+    for(int i=0; i < args_count; i++) {
+        if(strcmp(args[i], "|") != 0) {
+            pipe_command[argCounter] = args[i];
+            argCounter++;
+        } else {
+            pipe_command[argCounter] = NULL;
+            /*for(int j = 0; j < argCounter; j++)
+                printf("%s ", pipe_command[j]);
+            printf("\n");*/
+            // fork and exec
+            int pid = fork();
+            if(pid == 0) {
+                //child
+                //if(flag == 0) {
+                    tmpFile = fopen(filename1, "w");
+                    int ofno = fileno(tmpFile);
+                    close(STDOUT_FILENO);
+                    dup2(ofno, STDOUT_FILENO);
+                    close(ofno);
+                /*} else {
+                    tmpFile = fopen(filename2, "w");
+                    int ofno = fileno(tmpFile);
+                    close(STDOUT_FILENO);
+                    dup2(ofno, STDOUT_FILENO);
+                    close(ofno);
+                }*/
+                if(flag != 0) {
+                    tmpFile = fopen(filename1, "r");
+                    int ifno = fileno(tmpFile);
+                    close(STDIN_FILENO);
+                    dup2(ifno, STDIN_FILENO);
+                    close(ifno);
+                }
+                execvp(pipe_command[0], pipe_command);
+                printf("Failed to execute command: %s\n", pipe_command[0]);
+                exit(-1);
+            } else {
+                //parent
+                waitpid(pid, NULL, 0);
+                flag = 1;
+            }
+            argCounter = 0;
+        }
+    }
+    pipe_command[argCounter] = NULL;
+    /*for(int j = 0; j < argCounter; j++)
+        printf("%s ", pipe_command[j]);
+    printf("\n");*/
+    // fork and exec
+    int pid = fork();
+    if(pid == 0) {
+        //child
+        tmpFile = fopen(filename1, "r");
+        int ifno = fileno(tmpFile);
+        close(STDIN_FILENO);
+        dup2(ifno, STDIN_FILENO);
+        close(ifno);
+        execvp(pipe_command[0], pipe_command);
+        printf("Failed to execute command: %s\n", pipe_command[0]);
+        exit(-1);
+    } else {
+        //parent
+        waitpid(pid, NULL, 0);
+    }
+}
+
+
 int main() {
 
-    addTimeoutToPath();
+    //addTimeoutToPath();
 
     char input[120];
-    char *args[20];
+    char *args[120];
 
     while (1) {
         // Print prompt and read input
@@ -192,6 +282,8 @@ int main() {
             mypwd();
         } else if(isIOpresent(args) == 0) {
             executeWithIO(args);
+        } else if(isPipePresent(args) > 0) {
+            executeWithPipes(args);
         } else {
             pid_t pid = fork();
             if (pid < 0) {

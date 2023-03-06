@@ -14,4 +14,4 @@ mytoolkit: $(OBJS)
 	$(C) $(CFLAGS) $(OBJS) -o mytoolkit.x
 
 clean:
-	-rm -rf *.out *.o *.x *.dSYM
+	-rm -rf tmp *.out *.o *.x *.dSYM
