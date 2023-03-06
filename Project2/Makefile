@@ -28,7 +28,7 @@ mypwd: mypwd.c
 mytimeout: mytimeout.c
 	$(C) $(CFLAGS) mytimeout.c -o mytimeout.x
 
-build:
+build: $(BINARIES)
 	$(C) $(CFLAGS) -o $(NAME) $(BINARIES)
 
 clean:

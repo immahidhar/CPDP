@@ -40,6 +40,10 @@ int main(int argc, char *argv[]) {
         exit(-1);
     }
     int seconds = atoi(argv[1]);
+    if(seconds<=0) {
+        fprintf(stderr, "mytimeout: correct usage - timeout secs must be positive integer\n");
+        exit(-1);
+    }
     // Register signal handler
     signal(SIGALRM, sig_handler); 
     // set alarm
