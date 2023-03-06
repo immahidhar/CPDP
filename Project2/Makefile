@@ -1,6 +1,6 @@
 C = gcc
 CFLAGS = -std=gnu99 -Wall -pedantic -g
-NAME = mytoolkit
+NAME = mytoolkit.x
 OTHER = mypwd
 TARGETS = clean processor executor cmd util main mypwd mytimeout build
 BINARIES = processor.o executor.o cmd.o util.o main.o
