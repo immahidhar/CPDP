@@ -92,6 +92,7 @@ void executeWithIO(char **args) {
     int oIndex = isOPresent(args);
     FILE *iF, *oF;
     if(iIndex != -1) {
+        iIndex = isIPresent(args);
         char *filename = args[iIndex + 1];
         iF = fopen(filename, "r");
         if (!iF) {
@@ -99,13 +100,22 @@ void executeWithIO(char **args) {
             return;
         }
         for(int i = 0; i < args_count + 1; i++) {
-            if(i == iIndex || i == iIndex+1) {
-                args[i] = args[i+1];
+            if(strcmp(args[i], "<") == 0) {
+                for(int k = 0; k < 2; k++) {
+                    for(int j = i; j < args_count; j++) {
+                        args[j] = args[j+1];
+                    }
+                }
                 args_count--;
+                args_count--;
+                break;
             }
         }
+        for(int j = 0; j < args_count; j++) printf("%s\n", args[j]);
+        printf("%d\n", args_count);
     }
     if(oIndex != -1) {
+        oIndex = isOPresent(args);
         char *filename = args[oIndex + 1];
         oF = fopen(filename, "w");
         if (!oF) {
@@ -113,11 +123,18 @@ void executeWithIO(char **args) {
             return;
         }
         for(int i = 0; i < args_count + 1; i++) {
-            if(i == oIndex || i == oIndex+1) {
-                args[i] = args[i+1];
+            if(strcmp(args[i], ">") == 0) {
+                for(int k = 0; k < 2; k++) {
+                    for(int j = i; j < args_count; j++) {
+                        args[j] = args[j+1];
+                    }
+                }
+                args_count--;
                 args_count--;
             }
         }
+        for(int j = 0; j < args_count; j++) printf("%s\n", args[j]);
+        printf("%d\n", args_count);
     }
     for(int j = 0; j < args_count; j++) printf("%s\n", args[j]);
     printf("%d\n", args_count);
