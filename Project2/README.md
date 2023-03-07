@@ -20,6 +20,8 @@ myexit
 mytimeout.x secs cmd args...
 ```
 
+Limitation - Piping only works upto 2 pipes.
+
 
 **To compile all three programs at a time, execute the following in terminal**
 ```
