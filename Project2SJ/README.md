@@ -1,3 +1,15 @@
+mycd, mypwd and myexit are implemented as internal commands. 
+
+mytimeout is implemented as external command.
+
+Here is how you call those commands - 
+```
+mycd [arg]
+mypwd
+myexit
+mytimeout.x secs cmd args...
+```
+
 To compile all files, execute the following in terminal
 >make
 
