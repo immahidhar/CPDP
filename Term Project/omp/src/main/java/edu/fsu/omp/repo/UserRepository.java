@@ -8,6 +8,6 @@ import java.util.List;
 public interface UserRepository extends CrudRepository<User, Integer> {
     List<User> findByUsername(String username);
     default void deleteByUsername(String username) {
-        delete(findByUsername(username).get(0));
+        deleteAll(findByUsername(username));
     };
 }

@@ -5,9 +5,11 @@ import lombok.Data;
 
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class UserDTO {
+public class OrderDTO {
     private Integer id;
-    private String username;
-    private String email;
+    private Integer userId;
+    private Integer productId;
+    private int quantity;
     private String address;
+    private Status status;
 }

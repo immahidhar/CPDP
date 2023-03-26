@@ -8,16 +8,20 @@ import javax.persistence.*;
 @Entity
 @Getter
 @Setter
-@Table(name="User")
-public class User {
+@Table(name="Product")
+public class Product {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
-    @OneToOne(mappedBy="user")
+    //@OneToOne(mappedBy="product")
     private Integer id;
-    @Column(unique=true)
-    private String username;
     @Column
-    private String email;
+    private String category;
+    @Column
+    private String name;
+    @Column
+    private double price;
+    @Column
+    private int quantity;
     @Column
     private String address;
 }

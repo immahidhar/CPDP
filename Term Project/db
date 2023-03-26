@@ -4,15 +4,15 @@ USER
 	email
 	address
 
-PRODUCTS
+PRODUCT
 	id
 	category
 	name
 	price
 	quantity
-	pincode
+	address
 
-ORDERS
+ORDER
 	id
 	userid
 	productid
