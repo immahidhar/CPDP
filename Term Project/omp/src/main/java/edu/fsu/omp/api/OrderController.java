@@ -68,11 +68,11 @@ public class OrderController {
         if(product.get().getQuantity() - orderDTO.getQuantity() < 0)
             return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE)
                     .body("Not enough quantity of product available in inventory!");
-        product.get().setQuantity(product.get().getQuantity() - orderDTO.getQuantity());
         Order order = modelMapper.map(orderDTO, Order.class);
         order.setStatus(Status.ORDERED.toString());
         log.debug(String.valueOf(order));
         orderRepository.save(order);
+        product.get().setQuantity(product.get().getQuantity() - orderDTO.getQuantity());
         productRepository.save(product.get());
         return ResponseEntity.status(HttpStatus.CREATED).body("Order placed successfully");
     }
@@ -95,6 +95,7 @@ public class OrderController {
         order.get().setQuantity(orderDTO.getQuantity());
         order.get().setStatus(orderDTO.getStatus().toString());
         orderRepository.save(order.get());
+        product.get().setQuantity(product.get().getQuantity() + order.get().getQuantity() - orderDTO.getQuantity());
         productRepository.save(product.get());
         return ResponseEntity.status(HttpStatus.ACCEPTED).body("Order updated successfully!");
     }
