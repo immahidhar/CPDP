@@ -242,6 +242,7 @@ int main() {
         // Print prompt and read input
         printf("$ ");
         if(fgets(input, sizeof(input), stdin) == NULL) exit(0);
+        if(strcmp(input, "\n") == 0) continue;
         // Parse input
         parse_input(input, args);
 

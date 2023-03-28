@@ -129,12 +129,14 @@ void executePiping(tokenlist *tokens, int pipeCount) {
             if(cmdIndex == 0 || cmdIndex%2 == 0) {
                 // close stdout and connect it to read end of next pipe
                 if(cmdIndex != cmdCount-1) {
+                    close(STDOUT_FILENO);
                     dup2(p_fds[pipeIndex][1], STDOUT_FILENO);
                     close(p_fds[pipeIndex][0]);
                     close(p_fds[pipeIndex][1]);
                 }
                 if(cmdIndex != 0) {
                     // close stdin and connect it to write end of previous pipe
+                    close(STDIN_FILENO);
                     dup2(p_fds[pipeIndex][0], STDIN_FILENO);
                     close(p_fds[pipeIndex][1]);
                     close(p_fds[pipeIndex][0]);
@@ -143,11 +145,13 @@ void executePiping(tokenlist *tokens, int pipeCount) {
                 execute_command(commands[cmdIndex], false);
             } else {
                 // close stdin and connect it to write end of previous pipe
+                close(STDIN_FILENO);
                 dup2(p_fds[pipeIndex][0], STDIN_FILENO);
                 close(p_fds[pipeIndex][1]);
                 close(p_fds[pipeIndex][0]);
                 if (cmdIndex != cmdCount - 1) {
                     // close stdout and connect it to read end of next pipe
+                    close(STDOUT_FILENO);
                     dup2(p_fds[pipeIndex+1][1], STDOUT_FILENO);
                     close(p_fds[pipeIndex+1][0]);
                     close(p_fds[pipeIndex+1][1]);
@@ -155,7 +159,7 @@ void executePiping(tokenlist *tokens, int pipeCount) {
                 // execute command 2
                 execute_command(commands[cmdIndex], false);
             }
-            exit(1);
+            exit(-1);
         } else {
             // parent process
             if(cmdIndex == 0 || cmdIndex%2 == 0) {
@@ -171,8 +175,11 @@ void executePiping(tokenlist *tokens, int pipeCount) {
                     pipeIndex++;
                 }
             }
+            //printf("Waiting %d\n", pid);
             waitpid(pid, NULL, 0);
+            //printf("Done\n");
         }
     }
+    for(int i = 0; i < cmdCount; i++) free_tokens(commands[i]);
     
 }
