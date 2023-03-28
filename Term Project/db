@@ -1,0 +1,21 @@
+USER
+	id
+	name
+	email
+	address
+
+PRODUCT
+	id
+	category
+	name
+	price
+	quantity
+	address
+
+ORDER
+	id
+	userid
+	productid
+	quantity
+	address
+	status
