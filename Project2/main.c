@@ -17,6 +17,7 @@ int main() {
             printf("%s\n", tokens->items[i]);*/
         if (tokens->size != 0) process_command(tokens);
         free(input);
+        free_tokens(tokens);
     }
     return 0;
 }
