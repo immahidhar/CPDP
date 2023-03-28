@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.transaction.Transactional;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -55,6 +56,7 @@ public class OrderController {
                     .map(this::convertToDTO).collect(Collectors.toList());
         return null;
     }
+    @Transactional
     @PostMapping(path="/place")
     public ResponseEntity<String> placeOrder(@RequestBody OrderDTO orderDTO) {
         Optional<User> user = userRepository.findById(orderDTO.getUserId());
@@ -71,8 +73,10 @@ public class OrderController {
         order.setStatus(Status.ORDERED.toString());
         log.debug(String.valueOf(order));
         orderRepository.save(order);
+        productRepository.save(product.get());
         return ResponseEntity.status(HttpStatus.CREATED).body("Order placed successfully");
     }
+    @Transactional
     @PutMapping(path="/update")
     public ResponseEntity<String> updateOrder(@RequestBody OrderDTO orderDTO) {
         Optional<Order> order = orderRepository.findById(orderDTO.getId());
@@ -91,8 +95,10 @@ public class OrderController {
         order.get().setQuantity(orderDTO.getQuantity());
         order.get().setStatus(orderDTO.getStatus().toString());
         orderRepository.save(order.get());
+        productRepository.save(product.get());
         return ResponseEntity.status(HttpStatus.ACCEPTED).body("Order updated successfully!");
     }
+    @Transactional
     @DeleteMapping(path="/delete")
     public ResponseEntity<String> deleteOrder(@RequestParam(required = false) String id,
                                               @RequestParam(required = false) String userId) {
@@ -101,6 +107,7 @@ public class OrderController {
             orderRepository.deleteAllByUserId(Integer.parseInt(userId));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body("Product deleted!");
     }
+    @Transactional
     @DeleteMapping(path="/delete_all")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public @ResponseBody String deleteAllOrders() {

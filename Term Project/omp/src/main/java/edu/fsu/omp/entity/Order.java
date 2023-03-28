@@ -10,23 +10,23 @@ import javax.persistence.*;
 @Getter
 @Setter
 @ToString
-@Table(name="Order")
+@Table(name="Orders")
 public class Order {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Integer id;
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name="userId", referencedColumnName = "id", nullable=false)
-    private User user;
-    /*@Column
-    private Integer userId;*/
-    /*@OneToOne
-    @JoinColumn(name="productId", nullable=false)
+    /*@OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name="user_id", referencedColumnName = "id", nullable=false)
+    private User user;*/
+    @Column(name = "user_id")
+    private Integer userId;
+    /*@OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name="product_id", nullable=false)
     private Product product;*/
-    @Column
+    @Column(name = "product_id")
     private Integer productId;
     @Column
-    private int quantity;
+    private Integer quantity;
     @Column
     private String address;
     @Column

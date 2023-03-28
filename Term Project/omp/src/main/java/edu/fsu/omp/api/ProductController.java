@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.transaction.Transactional;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -46,11 +47,13 @@ public class ProductController {
                     .map(this::convertToDTO).collect(Collectors.toList());
         return null;
     }
+    @Transactional
     @PostMapping(path="/add")
     public ResponseEntity<String> addNewProduct(@RequestBody ProductDTO productDTO) {
         productRepository.save(modelMapper.map(productDTO, Product.class));
         return ResponseEntity.status(HttpStatus.CREATED).body("Product added");
     }
+    @Transactional
     @PutMapping(path="/update")
     public ResponseEntity<String> updateProduct(@RequestBody ProductDTO productDTO) {
         Optional<Product> product = productRepository.findById(productDTO.getId());
@@ -64,6 +67,7 @@ public class ProductController {
         productRepository.save(product.get());
         return ResponseEntity.status(HttpStatus.ACCEPTED).body("Product updated successfully!");
     }
+    @Transactional
     @DeleteMapping(path="/delete")
     public ResponseEntity<String> deleteProduct(@RequestParam(required = false) String id,
                                            @RequestParam(required = false) String name) {
@@ -71,6 +75,7 @@ public class ProductController {
         else if(name != null) productRepository.deleteByName(name);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body("Product deleted!");
     }
+    @Transactional
     @DeleteMapping(path="/delete_all")
     public ResponseEntity<String> deleteAllProducts() {
         log.info("Deleting all products from database!!!");

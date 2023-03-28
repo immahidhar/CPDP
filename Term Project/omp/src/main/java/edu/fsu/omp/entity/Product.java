@@ -12,7 +12,7 @@ import javax.persistence.*;
 public class Product {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
-    //@OneToOne(mappedBy="product")
+    //@OneToOne(mappedBy="order")
     private Integer id;
     @Column
     private String category;
