@@ -8,7 +8,7 @@ int serv_sock_fd, opt = 1;
 void read_config(const char* configfile) {
     FILE* f = fopen(configfile,"r");
     if (f) {
-        fscanf(f,"port: %d\n",&SERVERPORT);
+        fscanf(f, "port: %d\n", &SERVERPORT);
         fclose(f);
     } else {
         perror("SERVERCONFIG:");
@@ -29,9 +29,9 @@ void server_init() {
         exit(EXIT_FAILURE);
     }
 
-    // lose the pesky "address already in use" error message
+    // avoid "address already in use" error message
     if (setsockopt(serv_sock_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt))) {
-        perror("setsockopt");
+        perror("setsockopt:");
         exit(EXIT_FAILURE);
     }
 

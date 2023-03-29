@@ -10,6 +10,12 @@
 #include <fcntl.h>
 #include <netinet/in.h>
 
+#include <netdb.h>
+#include <sys/types.h>
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+
 #include <iostream>
 #include <string>
 
