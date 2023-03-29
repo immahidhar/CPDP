@@ -2,7 +2,7 @@ CC = g++
 CFLAGS = -Wall -pedantic -g
 LIBS = -pthread\
 
-default: clean common.o server.o client.o server
+default: clean common.o server.o client.o server client
 
 common.o: common.cpp common.h 
 	  $(CC) $(CFLAGS) -c common.cpp

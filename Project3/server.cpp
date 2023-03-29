@@ -11,7 +11,7 @@ void read_config(const char* configfile) {
         fscanf(f,"port: %d\n",&SERVERPORT);
         fclose(f);
     } else {
-        perror("ServerConfigRead:");
+        perror("SERVERCONFIG:");
         fflush(stdout);
         exit(1);
     }
@@ -53,10 +53,18 @@ void server_init() {
 }
 
 /**
+ * start running server
+*/
+void server_run() {
+    while (1) {
+        // TODO: implementation pending
+    }
+}
+
+/**
  * entry point for server
 */
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
     read_config(SERVERCONFIG);
     server_init();
     //server_run();
