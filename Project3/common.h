@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <signal.h>
 #include <netinet/in.h>
 
 #include <netdb.h>
@@ -18,7 +19,27 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
+#include <map>
+#include <set>
+#include <queue>
+#include <list>
+
+#include <pthread.h>
+
+#define TOKEN_LIMIT 2
+#define MAXBUFLEN 100000
+#define MY_PACKET_LEN 1000
+#define MY_SOCK_BUFFER_LEN 3000
+
+struct Packet {
+    char data[MY_PACKET_LEN];	
+};
 
 using namespace std;
+
+void get_tokens(string line, string* tokens);
+int send_packet_to_socket(int sockfd, Packet *packet);
+void remove_read_from_buf(char *buf, int num);
 
 #endif
