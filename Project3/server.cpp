@@ -32,9 +32,9 @@ class Connection {
     }
 
     string getUsername(void) {
-        if(username == "")
+        /*if(username == "")
             return "user" + to_string(clientid);
-        else
+        else*/
             return username;
     }
 };
@@ -85,7 +85,7 @@ void send_token_to_client(string token, Connection* conn, bool broadcast, bool i
             cerr << "Client not logged in - id: " << conn->clientid << " fd: " << conn->socket << endl;
         }
     } else {
-        for(int conn_iter = 0; conn_iter < activeconnections.size(); conn_iter++) {
+        for(size_t conn_iter = 0; conn_iter < activeconnections.size(); conn_iter++) {
             if(conn->clientid != activeconnections[conn_iter].clientid) {
                 if(activeconnections[conn_iter].loggged_in || ignore_login) {
                     int send_result = send_packet_to_socket(activeconnections[conn_iter].socket, &packet);
@@ -243,7 +243,7 @@ void read_from_clients(void) {
     int nbytes;
     unsigned char buf[MAXBUFLEN];
     // run through the existing clients looking for data to read
-    for(int conn_iter = 0; conn_iter < activeconnections.size(); conn_iter++) {
+    for(size_t conn_iter = 0; conn_iter < activeconnections.size(); conn_iter++) {
         if (FD_ISSET(activeconnections[conn_iter].socket, &read_fds)) {
             nbytes = recv(activeconnections[conn_iter].socket, buf, MAXBUFLEN, 0);
             if ( nbytes <= 0) {
@@ -288,7 +288,7 @@ void* read_from_client(void *arg) {
                 close(client->socket);
                 FD_CLR(client->socket, &master);
                 cout << "Client id: " << client->clientid << " fd: " << client->socket << " - read thread terminating" << endl;
-                int conn_pos = 0;
+                size_t conn_pos = 0;
                 for(; conn_pos < activeconnections.size(); conn_pos++) {
                     if(activeconnections[conn_pos].clientid == client->clientid)
                         break;
