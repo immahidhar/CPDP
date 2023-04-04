@@ -29,8 +29,8 @@
 
 #define TOKEN_LIMIT 2
 #define MAXBUFLEN 100000
-#define MY_PACKET_LEN 1000
-#define MY_SOCK_BUFFER_LEN 3000
+#define MY_PACKET_LEN 10000
+#define MY_SOCK_BUFFER_LEN 50000
 
 using namespace std;
 

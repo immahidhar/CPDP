@@ -134,7 +134,7 @@ void process_command(string* tokens, Connection* conn) {
     if(command == "login") {
 
         if(conn->loggged_in) {
-            string response = "You're already logged in. username: " + conn->getUsername();
+            string response = "User " + conn->getUsername() + " is already logged in.";
             response = "server >> " + response;
             cout << response << endl;
             send_token_to_client(response, conn, false, true);
