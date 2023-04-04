@@ -16,8 +16,6 @@ void get_tokens(string line, string* tokens) {
         line.erase(0, pos + delimiter.length());
         tokens[1] = line;
     }
-    /*for(i = 0; i < TOKEN_LIMIT; i++)
-        cout << tokens[i] << endl;*/
 }
 
 /**
@@ -25,13 +23,7 @@ void get_tokens(string line, string* tokens) {
 */
 int send_packet_to_socket(int sockfd, Packet *packet) {
     unsigned char buf[MY_SOCK_BUFFER_LEN];
-    memcpy(&(buf[0]), (char *)packet, sizeof(Packet));    
+    memcpy(&(buf[0]), (char *)packet, sizeof(Packet));
     int send_result = send(sockfd, (void*)(buf), sizeof(Packet), 0);
     return send_result;
-}
-
-void remove_read_from_buf(unsigned char *buf, int num) {
-    unsigned char tempbuf[MY_SOCK_BUFFER_LEN];
-    memcpy(tempbuf, buf + num, MY_SOCK_BUFFER_LEN - num);
-    memcpy(buf, tempbuf, MY_SOCK_BUFFER_LEN);
 }

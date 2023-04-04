@@ -1,7 +1,6 @@
 #include "client.h"
 
-int cl_sock_fd = -1, highestsocket = -1, server_sock_buf_byte_counter = 0;
-unsigned char server_sock_buf[MY_SOCK_BUFFER_LEN];
+int cl_sock_fd = -1, highestsocket = -1;
 fd_set master, read_fds;
 pthread_t cl_sock_tid;
 
@@ -45,7 +44,7 @@ void read_config(const char* configfile) {
 */
 void sendTokenToServer(string token) {
     struct Packet packet;
-    memcpy(packet.data, token.c_str(), sizeof(token));
+    strcpy(packet.data, token.c_str());
     int send_result = send_packet_to_socket(cl_sock_fd, &packet);
     if (send_result == -1)  {
         perror("send");
@@ -91,7 +90,7 @@ void process_command(string line, string* tokens) {
  * Process message received from server
 */
 void process_server_message(Packet *packet) {
-    cout << packet->data;
+    cout << packet->data << endl;
 }
 
 /**
@@ -110,23 +109,13 @@ void readFromServer(void) {
             } else {
                 cout << "client recv error from server!" << endl;
             }
-            //sleep(10000);
-            close(cl_sock_fd);
             FD_CLR(cl_sock_fd, &master);
+            close(cl_sock_fd);
             cl_sock_fd = -1;
             exit(1);
         } else {
-            memcpy(server_sock_buf + server_sock_buf_byte_counter, buf, nbytes);
-            server_sock_buf_byte_counter += nbytes;
-            int num_to_read = sizeof(Packet);
-            //cout << endl;
-            while (num_to_read <= server_sock_buf_byte_counter) {
-                Packet* packet = (Packet*) (server_sock_buf);     
-                process_server_message(packet);
-                remove_read_from_buf(server_sock_buf, num_to_read);
-                server_sock_buf_byte_counter -= num_to_read;
-            }
-            cout << endl;
+            Packet* packet = (Packet*) (buf);
+            process_server_message(packet);
         }
     }
 }
@@ -136,7 +125,7 @@ void readFromServer(void) {
 */
 void* client_run(void *arg) {
     pthread_detach(pthread_self());
-    cout << "Server socket read thread running" << endl;
+    //cout << "Server socket read thread running" << endl;
     // infinite loop
     while(1) {
         struct timeval timeout;
@@ -221,6 +210,10 @@ int main(int argc, char** argv) {
         //cout << "$ ";
         string line;
         getline(cin, line);
+        /*if(line == EOF) {
+            cout << "EOF detected. Exiting!" << endl;
+            exit_client();
+        }*/
         string tokens[TOKEN_LIMIT];
         string tokenss = line;
         get_tokens(tokenss, tokens);
