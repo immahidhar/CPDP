@@ -3,7 +3,6 @@
 #define __SERVER_H
 
 #include "common.h"
-#include <string>
 
 const char* SERVERCONFIG = "chat_server_configuration_file";
 int SERVERPORT = 51000;

@@ -33,7 +33,7 @@ class Connection {
 
     string getUsername(void) {
         if(username == "")
-            return "user" + to_string(clientid);
+            return "user" + std::to_string(clientid);
         else
             return username;
     }
