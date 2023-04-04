@@ -12,30 +12,12 @@ class Connection {
         string username;
         bool loggged_in;
         int socket, clientid;
-    
-    Connection() {
-        socket = -1;
-        clientid = -1;
-        loggged_in = false;
-        username = "";
-    }
 
     Connection(int sock, int id) {
         socket = sock;
         clientid = id;
         loggged_in = false;
         username = "";
-    }
-
-    void setUsername(string uname) {
-        username = uname;
-    }
-
-    string getUsername(void) {
-        /*if(username == "")
-            return "user" + to_string(clientid);
-        else*/
-            return username;
     }
 };
 
@@ -117,7 +99,7 @@ Connection* check_if_user_present(string username) {
     cout << "searching username " << username << endl;
     username = string(&username.c_str()[1]);
     for(size_t conn_iter = 0; conn_iter < activeconnections.size(); conn_iter++) {
-        if(username == activeconnections[conn_iter].getUsername()) {
+        if(username == activeconnections[conn_iter].username) {
             return &activeconnections[conn_iter];
         }
     }
@@ -145,7 +127,7 @@ void chat(string* tokens, Connection* conn) {
         Connection* r_conn = check_if_user_present(chat_tokens[0]);
         if(r_conn != NULL) {
             if(r_conn->loggged_in) {
-                string chat = conn->getUsername() + " >> " + chat_tokens[1];
+                string chat = conn->username + " >> " + chat_tokens[1];
                 send_token_to_client(chat, r_conn, false, false);
                 string response = "chat sent to " + chat_tokens[0];
                 response = "server >> " + response;
@@ -164,7 +146,7 @@ void chat(string* tokens, Connection* conn) {
             send_token_to_client(response, conn, false, true);
         }
     } else {
-        string chat = conn->getUsername() + " >> " + chat_tokenss;
+        string chat = conn->username + " >> " + chat_tokenss;
         send_token_to_client(chat, conn, true, false);
         string response = "chat broadcasted!";
         response = "server >> " + response;
@@ -185,8 +167,8 @@ void logout(string* tokens, Connection* conn) {
         send_token_to_client(response, conn, false, true);
         return;
     }
-    cout << "logging out user " << conn->getUsername() << endl;
-    string response = "User \"" + conn->getUsername() + "\" logged out.";
+    cout << "logging out user " << conn->username << endl;
+    string response = "User \"" + conn->username + "\" logged out.";
     conn->loggged_in = false;
     //conn->setUsername("");
     response = "server >> " + response;
@@ -199,16 +181,16 @@ void logout(string* tokens, Connection* conn) {
 */
 void login(string* tokens, Connection* conn) {
     if(conn->loggged_in) {
-        string response = "User " + conn->getUsername() + " is already logged in.";
+        string response = "User " + conn->username + " is already logged in.";
         response = "server >> " + response;
         cout << response << endl;
         send_token_to_client(response, conn, false, true);
         return;
     }
     cout << "logging in user " << tokens[1] << endl;
-    conn->setUsername(tokens[1]);
+    conn->username = tokens[1];
     conn->loggged_in = true;
-    string response = "User \"" + conn->getUsername() + "\" logged in.";
+    string response = "User \"" + conn->username + "\" logged in.";
     response = "server >> " + response;
     cout << response << endl;
     send_token_to_client(response, conn, false, true);
@@ -229,7 +211,7 @@ void process_command(string* tokens, Connection* conn) {
 */
 void process_client_message(Packet *packet, Connection* conn) {
     string client_message(packet->data);
-    cout << conn->getUsername() << " >> " << client_message << endl;
+    cout << conn->username << " >> " << client_message << endl;
     string tokens[TOKEN_LIMIT];
     string tokenss = client_message;
     get_tokens(tokenss, tokens);
