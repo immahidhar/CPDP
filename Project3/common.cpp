@@ -24,14 +24,14 @@ void get_tokens(string line, string* tokens) {
  * sends packet to socket
 */
 int send_packet_to_socket(int sockfd, Packet *packet) {
-    char buf[MY_SOCK_BUFFER_LEN];
+    unsigned char buf[MY_SOCK_BUFFER_LEN];
     memcpy(&(buf[0]), (char *)packet, sizeof(Packet));    
     int send_result = send(sockfd, (void*)(buf), sizeof(Packet), 0);
     return send_result;
 }
 
-void remove_read_from_buf(char *buf, int num) {
-    char tempbuf[MY_SOCK_BUFFER_LEN];
+void remove_read_from_buf(unsigned char *buf, int num) {
+    unsigned char tempbuf[MY_SOCK_BUFFER_LEN];
     memcpy(tempbuf, buf + num, MY_SOCK_BUFFER_LEN - num);
     memcpy(buf, tempbuf, MY_SOCK_BUFFER_LEN);
 }

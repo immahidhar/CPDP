@@ -1,7 +1,7 @@
 #include "client.h"
 
 int cl_sock_fd = -1, highestsocket = -1, server_sock_buf_byte_counter = 0;
-char server_sock_buf[MY_SOCK_BUFFER_LEN];
+unsigned char server_sock_buf[MY_SOCK_BUFFER_LEN];
 fd_set master, read_fds;
 pthread_t cl_sock_tid;
 
@@ -55,7 +55,7 @@ void sendTokenToServer(string token) {
 
 void printUsage(void) {
     cerr << "incorrect command entered!" << endl;
-    cerr << "usage:\n\tlogin username\n\tlogout username\n\tchat [@username] message\n\texit" << endl;
+    cerr << "usage:\n\tlogin username\n\tlogout\n\tchat [@username] message\n\texit" << endl;
 }
 
 /**
@@ -74,74 +74,16 @@ void process_command(string line, string* tokens) {
         cout << "logging in user \"" << tokens[1] << "\"" << endl;
         sendTokenToServer(line);
     } else if(command == "logout") {
-        if(tokens[1] == "NULL") {
-            printUsage();
-            return;
-        }
-        cout << "logging out user \"" << tokens[1] << "\"" << endl;
+        cout << "logging out" << endl;
         sendTokenToServer(line);
     } else if(command == "chat") {
         if(tokens[1] == "NULL") {
             printUsage();
             return;
         }
-        cout << "sending chat" << endl;
         sendTokenToServer(line);
     } else {
        printUsage();
-    }
-}
-
-
-/**
- * Initialize client by opening socket and connecting to server
-*/
-void client_init(void) {
-    struct hostent *he_server;
-    if ((he_server = gethostbyname(SERVERHOST)) == NULL) {
-        perror("gethostbyname");
-        cerr << "error resolving hostname for server" << SERVERHOST << endl;
-        exit(1);
-    }
-
-    struct sockaddr_in  server;
-    memcpy(&server.sin_addr, he_server->h_addr_list[0], he_server->h_length);
-    strcpy(SERVERIP, inet_ntoa(server.sin_addr));
-
-    cout << "Connecting to " << SERVERHOST << ":" << SERVERPORT << " ..." << endl;
-    if ((cl_sock_fd = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
-        perror("socket");
-        exit(1);
-    }
-
-    struct sockaddr_in server_addr;
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(SERVERPORT);
-    inet_aton(SERVERIP, (struct in_addr *)&server_addr.sin_addr.s_addr);
-    memset(&(server_addr.sin_zero), '\0', 8);
-
-    // connect
-    if (connect(cl_sock_fd, (struct sockaddr *)&server_addr, sizeof(struct sockaddr)) == -1) {
-        perror("connect");
-        cerr << "Error connecting to the server " << SERVERIP << " on port " << SERVERPORT << endl;
-        close(cl_sock_fd);
-        cl_sock_fd = -1;
-        exit(1);
-    }
-    cout << "Connected to " << SERVERIP << ":" << SERVERPORT << endl;
-
-    // clear the FD sets
-    FD_ZERO(&master);    
-    FD_ZERO(&read_fds);
-
-    FD_SET(fileno(stdin), &master);
-    if (fileno(stdin) > highestsocket)
-        highestsocket = fileno(stdin);
-    if (cl_sock_fd != -1)  {
-        FD_SET(cl_sock_fd, &master);
-        if (highestsocket <= cl_sock_fd) {
-            highestsocket = cl_sock_fd;
-        } 
     }
 }
 
@@ -157,7 +99,7 @@ void process_server_message(Packet *packet) {
 */
 void readFromServer(void) {
     int nbytes;
-    unsigned char buf[10000];	
+    unsigned char buf[MAXBUFLEN];	
     if ((cl_sock_fd != -1) && FD_ISSET(cl_sock_fd, &read_fds) ) {
         nbytes = recv(cl_sock_fd, buf, MAXBUFLEN, 0);
         // handle server response or data         
@@ -211,6 +153,58 @@ void* client_run(void *arg) {
             }
         }
         readFromServer();
+    }
+}
+
+/**
+ * Initialize client by opening socket and connecting to server
+*/
+void client_init(void) {
+    struct hostent *he_server;
+    if ((he_server = gethostbyname(SERVERHOST)) == NULL) {
+        perror("gethostbyname");
+        cerr << "error resolving hostname for server" << SERVERHOST << endl;
+        exit(1);
+    }
+
+    struct sockaddr_in  server;
+    memcpy(&server.sin_addr, he_server->h_addr_list[0], he_server->h_length);
+    strcpy(SERVERIP, inet_ntoa(server.sin_addr));
+
+    cout << "Connecting to " << SERVERHOST << ":" << SERVERPORT << " ..." << endl;
+    if ((cl_sock_fd = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
+        perror("socket");
+        exit(1);
+    }
+
+    struct sockaddr_in server_addr;
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(SERVERPORT);
+    inet_aton(SERVERIP, (struct in_addr *)&server_addr.sin_addr.s_addr);
+    memset(&(server_addr.sin_zero), '\0', 8);
+
+    // connect
+    if (connect(cl_sock_fd, (struct sockaddr *)&server_addr, sizeof(struct sockaddr)) == -1) {
+        perror("connect");
+        cerr << "Error connecting to the server " << SERVERIP << " on port " << SERVERPORT << endl;
+        close(cl_sock_fd);
+        cl_sock_fd = -1;
+        exit(1);
+    }
+    cout << "Connected to " << SERVERIP << ":" << SERVERPORT << endl;
+
+    // clear the FD sets
+    FD_ZERO(&master);    
+    FD_ZERO(&read_fds);
+
+    FD_SET(fileno(stdin), &master);
+    if (fileno(stdin) > highestsocket)
+        highestsocket = fileno(stdin);
+    if (cl_sock_fd != -1)  {
+        FD_SET(cl_sock_fd, &master);
+        if (highestsocket <= cl_sock_fd) {
+            highestsocket = cl_sock_fd;
+        } 
     }
 }
 

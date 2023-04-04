@@ -12,7 +12,7 @@ class Connection {
         string username;
         bool loggged_in;
         struct Packet pkt;
-        char sock_buf[MY_SOCK_BUFFER_LEN];
+        unsigned char sock_buf[MY_SOCK_BUFFER_LEN];
         int socket, clientid, sock_buf_byte_counter;
     
     Connection() {
@@ -108,16 +108,22 @@ void send_token_to_client(string token, Connection* conn, bool broadcast, bool i
 }
 
 /**
+ * see if token has @ at the beginning
+*/
+bool check_if_username_present(string username) {
+    if(username.c_str()[0] == '@') return true;
+    else return false;
+}
+
+/**
  * Search for user by username among activeconnections i.e. clients
 */
 Connection* check_if_user_present(string username) {
     cout << "searching username " << username << endl;
-    if(username.c_str()[0] == '@') {
-        username = string(&username.c_str()[1]);
-        for(int conn_iter = 0; conn_iter < activeconnections.size(); conn_iter++) {
-            if(username == activeconnections[conn_iter].getUsername()) {
-                return &activeconnections[conn_iter];
-            }
+    username = string(&username.c_str()[1]);
+    for(int conn_iter = 0; conn_iter < activeconnections.size(); conn_iter++) {
+        if(username == activeconnections[conn_iter].getUsername()) {
+            return &activeconnections[conn_iter];
         }
     }
     return NULL;
@@ -126,54 +132,72 @@ Connection* check_if_user_present(string username) {
 /**
  * process command received
 */
-void process_command(string* tokens, Connection conn) {
+void process_command(string* tokens, Connection* conn) {
     string command = tokens[0];
 
     if(command == "login") {
 
-        cout << "logging in user" << endl;
-        conn.setUsername(tokens[1]);
-        conn.loggged_in = true;
-        string response = "User \"" + conn.getUsername() + "\" logged in";
+        cout << "logging in user " << tokens[1] << endl;
+        conn->setUsername(tokens[1]);
+        conn->loggged_in = true;
+        string response = "User \"" + conn->getUsername() + "\" logged in";
         response = "server >> " + response;
         cout << response << endl;
-        send_token_to_client(response, &conn, false, true);
+        send_token_to_client(response, conn, false, true);
 
     } else if(command == "logout") {
 
-        cout << "logging out user" << endl;
-        conn.loggged_in = false;
-        string response = "User \"" + conn.getUsername() + "\" logged out";
+        cout << "logging out user " << conn->getUsername() << endl;
+        string response = "User \"" + conn->getUsername() + "\" logged out";
+        conn->loggged_in = false;
+        conn->setUsername("");
         response = "server >> " + response;
         cout << response << endl;
-        send_token_to_client(response, &conn, false, true);
+        send_token_to_client(response, conn, false, true);
 
     } else if(command == "chat") {
+
+        if(!conn->loggged_in) {
+            string response = "You're not logged in to chat";
+            response = "server >> " + response;
+            cout << response << endl;
+            send_token_to_client(response, conn, false, true);
+            return;
+        }
 
         string chat_tokens[TOKEN_LIMIT];
         string tokenss = tokens[1];
         get_tokens(tokenss, chat_tokens);
-        if(chat_tokens[1] != "NULL") {
+
+        if(check_if_username_present(chat_tokens[0])) {
             Connection* r_conn = check_if_user_present(chat_tokens[0]);
             if(r_conn != NULL) {
                 if(r_conn->loggged_in) {
-                    string chat = conn.getUsername() + " >> " + chat_tokens[1];
+                    string chat = conn->getUsername() + " >> " + chat_tokens[1];
                     send_token_to_client(chat, r_conn, false, false);
+                    string response = "chat sent";
+                    response = "server >> " + response;
+                    cout << response << endl;
+                    send_token_to_client(response, conn, false, true);
                 } else {
                     string response = "User " + chat_tokens[0] + " is not logged in to chat";
                     response = "server >> " + response;
                     cerr << response << endl;
-                    send_token_to_client(response, &conn, false, true);
+                    send_token_to_client(response, conn, false, true);
                 }
             } else {
                 string response = "No user found with username " + chat_tokens[0];
                 response = "server >> " + response;
                 cerr << response << endl;
-                send_token_to_client(response, &conn, false, true);
+                send_token_to_client(response, conn, false, true);
             }
         } else {
-            string chat = conn.getUsername() + " >> " + chat_tokens[1];
-            send_token_to_client(chat, &conn, true, false);
+            string chat = conn->getUsername() + " >> " + chat_tokens[0];
+            send_token_to_client(chat, conn, true, false);
+            string response = "chat sent";
+            response = "server >> " + response;
+            cout << response << endl;
+            send_token_to_client(response, conn, false, true);
         }
 
     }
@@ -182,9 +206,9 @@ void process_command(string* tokens, Connection conn) {
 /**
  * Process message received from client
 */
-void process_client_message(Packet *packet, Connection conn) {
+void process_client_message(Packet *packet, Connection* conn) {
     string client_message(packet->data);
-    cout << conn.getUsername() << " >> " << client_message << endl;
+    cout << conn->getUsername() << " >> " << client_message << endl;
     string tokens[TOKEN_LIMIT];
     string tokenss = client_message;
     get_tokens(tokenss, tokens);
@@ -196,7 +220,7 @@ void process_client_message(Packet *packet, Connection conn) {
 */
 void read_from_clients(void) {
     int nbytes;
-    char buf[MAXBUFLEN];
+    unsigned char buf[MAXBUFLEN];
     // run through the existing connections looking for data to read
     for(int conn_iter = 0; conn_iter < activeconnections.size(); conn_iter++) {
         if (FD_ISSET(activeconnections[conn_iter].socket, &read_fds)) {
@@ -219,7 +243,7 @@ void read_from_clients(void) {
                 int num_to_read = sizeof(Packet);
                 while (num_to_read <= activeconnections[conn_iter].sock_buf_byte_counter) {
                     Packet* packet = (Packet*) (activeconnections[conn_iter].sock_buf);
-                    process_client_message(packet, activeconnections[conn_iter]);
+                    process_client_message(packet, &activeconnections[conn_iter]);
                     remove_read_from_buf(activeconnections[conn_iter].sock_buf, num_to_read);
                     activeconnections[conn_iter].sock_buf_byte_counter -= num_to_read;
                 }
@@ -263,7 +287,7 @@ void* read_from_client(void *arg) {
                 int num_to_read = sizeof(Packet);
                 while (num_to_read <= client->sock_buf_byte_counter) {
                     Packet* packet = (Packet*) client->sock_buf;
-                    process_client_message(packet, *client);
+                    process_client_message(packet, client);
                     remove_read_from_buf(client->sock_buf, num_to_read);
                     client->sock_buf_byte_counter -= num_to_read;
                 }

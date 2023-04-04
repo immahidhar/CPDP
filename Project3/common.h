@@ -40,6 +40,6 @@ using namespace std;
 
 void get_tokens(string line, string* tokens);
 int send_packet_to_socket(int sockfd, Packet *packet);
-void remove_read_from_buf(char *buf, int num);
+void remove_read_from_buf(unsigned char *buf, int num);
 
 #endif
