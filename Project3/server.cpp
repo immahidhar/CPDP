@@ -64,7 +64,6 @@ void read_config(const char* configfile) {
         fclose(f);
     } else {
         perror("SERVERCONFIG");
-        fflush(stdout);
         exit(1);
     }
 }
@@ -126,93 +125,103 @@ Connection* check_if_user_present(string username) {
 }
 
 /**
- * process command received
+ * chat with clients
 */
-void process_command(string* tokens, Connection* conn) {
-    string command = tokens[0];
+void chat(string* tokens, Connection* conn) {
 
-    if(command == "login") {
-
-        if(conn->loggged_in) {
-            string response = "User " + conn->getUsername() + " is already logged in.";
-            response = "server >> " + response;
-            cout << response << endl;
-            send_token_to_client(response, conn, false, true);
-            return;
-        }
-
-        cout << "logging in user " << tokens[1] << endl;
-        conn->setUsername(tokens[1]);
-        conn->loggged_in = true;
-        string response = "User \"" + conn->getUsername() + "\" logged in";
+    if(!conn->loggged_in) {
+        string response = "You're not logged in to chat.";
         response = "server >> " + response;
         cout << response << endl;
         send_token_to_client(response, conn, false, true);
+        return;
+    }
 
-    } else if(command == "logout") {
+    string chat_tokens[TOKEN_LIMIT];
+    string chat_tokenss = tokens[1];
+    get_tokens(chat_tokenss, chat_tokens);
 
-        if(!conn->loggged_in) {
-            string response = "You're not logged in to logout";
-            response = "server >> " + response;
-            cout << response << endl;
-            send_token_to_client(response, conn, false, true);
-            return;
-        }
-
-        cout << "logging out user " << conn->getUsername() << endl;
-        string response = "User \"" + conn->getUsername() + "\" logged out";
-        conn->loggged_in = false;
-        //conn->setUsername("");
-        response = "server >> " + response;
-        cout << response << endl;
-        send_token_to_client(response, conn, false, true);
-
-    } else if(command == "chat") {
-
-        if(!conn->loggged_in) {
-            string response = "You're not logged in to chat";
-            response = "server >> " + response;
-            cout << response << endl;
-            send_token_to_client(response, conn, false, true);
-            return;
-        }
-
-        string chat_tokens[TOKEN_LIMIT];
-        string chat_tokenss = tokens[1];
-        get_tokens(chat_tokenss, chat_tokens);
-
-        if(check_if_username_present(chat_tokens[0])) {
-            Connection* r_conn = check_if_user_present(chat_tokens[0]);
-            if(r_conn != NULL) {
-                if(r_conn->loggged_in) {
-                    string chat = conn->getUsername() + " >> " + chat_tokens[1];
-                    send_token_to_client(chat, r_conn, false, false);
-                    string response = "chat sent";
-                    response = "server >> " + response;
-                    cout << response << endl;
-                    send_token_to_client(response, conn, false, true);
-                } else {
-                    string response = "User " + chat_tokens[0] + " is not logged in to chat";
-                    response = "server >> " + response;
-                    cerr << response << endl;
-                    send_token_to_client(response, conn, false, true);
-                }
+    if(check_if_username_present(chat_tokens[0])) {
+        Connection* r_conn = check_if_user_present(chat_tokens[0]);
+        if(r_conn != NULL) {
+            if(r_conn->loggged_in) {
+                string chat = conn->getUsername() + " >> " + chat_tokens[1];
+                send_token_to_client(chat, r_conn, false, false);
+                string response = "chat sent to " + chat_tokens[0];
+                response = "server >> " + response;
+                cout << response << endl;
+                send_token_to_client(response, conn, false, true);
             } else {
-                string response = "No user found with username " + chat_tokens[0];
+                string response = "User " + chat_tokens[0] + " is not logged in to chat.";
                 response = "server >> " + response;
                 cerr << response << endl;
                 send_token_to_client(response, conn, false, true);
             }
         } else {
-            string chat = conn->getUsername() + " >> " + chat_tokenss;
-            send_token_to_client(chat, conn, true, false);
-            string response = "chat sent";
+            string response = "No user found with username " + chat_tokens[0];
             response = "server >> " + response;
-            cout << response << endl;
+            cerr << response << endl;
             send_token_to_client(response, conn, false, true);
         }
-
+    } else {
+        string chat = conn->getUsername() + " >> " + chat_tokenss;
+        send_token_to_client(chat, conn, true, false);
+        string response = "chat broadcasted!";
+        response = "server >> " + response;
+        cout << response << endl;
+        send_token_to_client(response, conn, false, true);
     }
+
+}
+
+/**
+ * logout user
+*/
+void logout(string* tokens, Connection* conn) {
+    if(!conn->loggged_in) {
+        string response = "You're not logged in to logout.";
+        response = "server >> " + response;
+        cout << response << endl;
+        send_token_to_client(response, conn, false, true);
+        return;
+    }
+    cout << "logging out user " << conn->getUsername() << endl;
+    string response = "User \"" + conn->getUsername() + "\" logged out.";
+    conn->loggged_in = false;
+    //conn->setUsername("");
+    response = "server >> " + response;
+    cout << response << endl;
+    send_token_to_client(response, conn, false, true);
+}
+
+/**
+ * login user
+*/
+void login(string* tokens, Connection* conn) {
+    if(conn->loggged_in) {
+        string response = "User " + conn->getUsername() + " is already logged in.";
+        response = "server >> " + response;
+        cout << response << endl;
+        send_token_to_client(response, conn, false, true);
+        return;
+    }
+    cout << "logging in user " << tokens[1] << endl;
+    conn->setUsername(tokens[1]);
+    conn->loggged_in = true;
+    string response = "User \"" + conn->getUsername() + "\" logged in.";
+    response = "server >> " + response;
+    cout << response << endl;
+    send_token_to_client(response, conn, false, true);
+}
+
+/**
+ * process command received from client
+*/
+void process_command(string* tokens, Connection* conn) {
+    string command = tokens[0];
+    if(command == "login") login(tokens, conn);
+    else if(command == "logout") logout(tokens, conn);
+    else if(command == "chat") chat(tokens,conn);
 }
 
 /**
