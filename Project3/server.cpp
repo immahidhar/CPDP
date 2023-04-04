@@ -74,24 +74,32 @@ void read_config(const char* configfile) {
 }
 
 /**
- * send data to client
+ * send token to client
 */
-void send_token_to_client(string token, Connection* conn, bool broadcast) {
+void send_token_to_client(string token, Connection* conn, bool broadcast, bool ignore_login) {
     struct Packet packet;
     memcpy(packet.data, token.c_str(), sizeof(token));
     if (!broadcast) {
-        int send_result = send_packet_to_socket(conn->socket, &packet);
-        if (send_result == -1) {
-            perror("send");
-            cerr << "Error sending packet to client - fd: " << conn->socket << endl;
+        if(conn->loggged_in || ignore_login) {
+            int send_result = send_packet_to_socket(conn->socket, &packet);
+            if (send_result == -1) {
+                perror("send");
+                cerr << "Error sending packet to client - id: " << conn->clientid << " fd: " << conn->socket << endl;
+            }
+        } else {
+            cerr << "Client not logged in - id: " << conn->clientid << " fd: " << conn->socket << endl;
         }
     } else {
         for(int conn_iter = 0; conn_iter < activeconnections.size(); conn_iter++) {
             if(conn->clientid != activeconnections[conn_iter].clientid) {
-                int send_result = send_packet_to_socket(activeconnections[conn_iter].socket, &packet);
-                if (send_result == -1)  {
-                    perror("send");
-                    cerr << "Error sending packet to client - fd: " << conn->socket << endl;
+                if(activeconnections[conn_iter].loggged_in || ignore_login) {
+                    int send_result = send_packet_to_socket(activeconnections[conn_iter].socket, &packet);
+                    if (send_result == -1)  {
+                        perror("send");
+                        cerr << "Error sending packet to client - id: " << conn->clientid << " fd: " << conn->socket << endl;
+                    }
+                } else {
+                    cerr << "Client not logged in - id: " << conn->clientid << " fd: " << conn->socket << endl;
                 }
             }
         }
@@ -99,6 +107,9 @@ void send_token_to_client(string token, Connection* conn, bool broadcast) {
     
 }
 
+/**
+ * Search for user by username among activeconnections i.e. clients
+*/
 Connection* check_if_user_present(string username) {
     cout << "searching username " << username << endl;
     if(username.c_str()[0] == '@') {
@@ -117,35 +128,54 @@ Connection* check_if_user_present(string username) {
 */
 void process_command(string* tokens, Connection conn) {
     string command = tokens[0];
+
     if(command == "login") {
+
         cout << "logging in user" << endl;
         conn.setUsername(tokens[1]);
         conn.loggged_in = true;
         string response = "User \"" + conn.getUsername() + "\" logged in";
+        response = "server >> " + response;
         cout << response << endl;
-        send_token_to_client(response, &conn, false);
+        send_token_to_client(response, &conn, false, true);
+
     } else if(command == "logout") {
+
         cout << "logging out user" << endl;
         conn.loggged_in = false;
         string response = "User \"" + conn.getUsername() + "\" logged out";
+        response = "server >> " + response;
         cout << response << endl;
-        send_token_to_client(response, &conn, false);
+        send_token_to_client(response, &conn, false, true);
+
     } else if(command == "chat") {
+
         string chat_tokens[TOKEN_LIMIT];
         string tokenss = tokens[1];
         get_tokens(tokenss, chat_tokens);
         if(chat_tokens[1] != "NULL") {
             Connection* r_conn = check_if_user_present(chat_tokens[0]);
             if(r_conn != NULL) {
-                send_token_to_client(chat_tokens[1], r_conn, false);
+                if(r_conn->loggged_in) {
+                    string chat = conn.getUsername() + " >> " + chat_tokens[1];
+                    send_token_to_client(chat, r_conn, false, false);
+                } else {
+                    string response = "User " + chat_tokens[0] + " is not logged in to chat";
+                    response = "server >> " + response;
+                    cerr << response << endl;
+                    send_token_to_client(response, &conn, false, true);
+                }
             } else {
                 string response = "No user found with username " + chat_tokens[0];
+                response = "server >> " + response;
                 cerr << response << endl;
-                send_token_to_client(response, &conn, false);
+                send_token_to_client(response, &conn, false, true);
             }
         } else {
-            send_token_to_client(chat_tokens[0], &conn, true);
+            string chat = conn.getUsername() + " >> " + chat_tokens[1];
+            send_token_to_client(chat, &conn, true, false);
         }
+
     }
 }
 
