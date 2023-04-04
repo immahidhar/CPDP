@@ -250,9 +250,11 @@ void read_from_clients(void) {
                 // got error or connection closed by client
                 if (nbytes == 0) {
                     // connection closed
-                    cerr << "Client closed connection, fd: " << activeconnections[conn_iter].socket << endl;
+                    cerr << "Client closed connection, id : " <<activeconnections[conn_iter].clientid
+                    << "fd: " << activeconnections[conn_iter].socket << endl;
                 } else {
-                    cerr << "received err from client" << endl;
+                    cerr << "received err from client, id : " <<activeconnections[conn_iter].clientid
+                    << "fd: " << activeconnections[conn_iter].socket << endl;
                 }
                 close(activeconnections[conn_iter].socket);
                 FD_CLR(activeconnections[conn_iter].socket, &master);
