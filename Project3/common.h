@@ -32,11 +32,11 @@
 #define MY_PACKET_LEN 1000
 #define MY_SOCK_BUFFER_LEN 3000
 
-struct Packet {
-    char data[MY_PACKET_LEN];	
-};
-
 using namespace std;
+
+struct Packet {
+    char data[MY_PACKET_LEN];
+};
 
 void get_tokens(string line, string* tokens);
 int send_packet_to_socket(int sockfd, Packet *packet);
