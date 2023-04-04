@@ -33,7 +33,7 @@ class Connection {
 
     string getUsername(void) {
         if(username == "")
-            return "user" + std::to_string(clientid);
+            return "user" + to_string(clientid);
         else
             return username;
     }
@@ -46,7 +46,7 @@ vector<Connection> activeconnections;
 */
 void sigint_function(int signum) {
     cout << endl << "SIGINT received: Shutting down server" << endl;
-    for(int conn_iter = 0; conn_iter < activeconnections.size(); conn_iter++) {
+    for(size_t conn_iter = 0; conn_iter < activeconnections.size(); conn_iter++) {
         close(activeconnections[conn_iter].socket);
         //pthread_kill(activeconnections[conn_iter].p_tid, 0);
     }
