@@ -116,7 +116,7 @@ bool check_if_username_present(string username) {
 Connection* check_if_user_present(string username) {
     cout << "searching username " << username << endl;
     username = string(&username.c_str()[1]);
-    for(int conn_iter = 0; conn_iter < activeconnections.size(); conn_iter++) {
+    for(size_t conn_iter = 0; conn_iter < activeconnections.size(); conn_iter++) {
         if(username == activeconnections[conn_iter].getUsername()) {
             return &activeconnections[conn_iter];
         }
