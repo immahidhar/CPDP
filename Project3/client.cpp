@@ -7,13 +7,13 @@ pthread_t cl_sock_tid;
 /**
  * exit client
 */
-void exit_client(void) {
+void exit_client(int exit_num) {
     //FD_CLR(cl_sock_fd, &master);
     //FD_CLR(cl_sock_fd, &read_fds);
     pthread_kill(cl_sock_tid, 0);
     close(cl_sock_fd);
     cl_sock_fd = -1;
-    exit(0);
+    exit(exit_num);
 }
 
 /**
@@ -21,7 +21,7 @@ void exit_client(void) {
 */
 void sigint_function(int signum) {
     cout << endl << "SIGINT received: Shutting down client" << endl;
-    exit_client();
+    exit_client(0);
 }
 
 /**
@@ -64,7 +64,7 @@ void process_command(string line, string* tokens) {
     string command = tokens[0];
     if(command == "exit") {
         cout << "exiting client" << endl;
-        exit_client();
+        exit_client(0);
     } else if(command == "login") {
         if(tokens[1] == "NULL") {
             printUsage();
@@ -138,7 +138,7 @@ void* client_run(void *arg) {
                 cerr << "Select for client interrupted by interrupt..." << endl;
             } else {
                 cerr << "Select problem .. client exiting iteration" << endl;
-                exit(1);
+                exit_client(1);
             }
         }
         readFromServer();

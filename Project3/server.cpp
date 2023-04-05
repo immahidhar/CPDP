@@ -24,16 +24,23 @@ class Connection {
 vector<Connection> activeconnections;
 
 /**
- * SIGINT handler to close opened sockets
+ * exit server - close socket
 */
-void sigint_function(int signum) {
-    cout << endl << "SIGINT received: Shutting down server" << endl;
+void exit_server(int exit_num) {
     for(size_t conn_iter = 0; conn_iter < activeconnections.size(); conn_iter++) {
         close(activeconnections[conn_iter].socket);
         //pthread_kill(activeconnections[conn_iter].p_tid, 0);
     }
     close(serv_sock_fd);
-    exit(0);
+    exit(exit_num);
+}
+
+/**
+ * SIGINT handler to close opened sockets
+*/
+void sigint_function(int signum) {
+    cout << endl << "SIGINT received: Shutting down server" << endl;
+    exit_server(0);
 }
 
 /**
@@ -232,14 +239,14 @@ void read_from_clients(void) {
                 // got error or connection closed by client
                 if (nbytes == 0) {
                     // connection closed
-                    cerr << "Client closed connection, id : " <<activeconnections[conn_iter].clientid
-                    << "fd: " << activeconnections[conn_iter].socket << endl;
+                    cerr << "Client closed connection, id: " <<activeconnections[conn_iter].clientid
+                    << " fd: " << activeconnections[conn_iter].socket << endl;
                 } else {
-                    cerr << "received err from client, id : " <<activeconnections[conn_iter].clientid
-                    << "fd: " << activeconnections[conn_iter].socket << endl;
+                    cerr << "received err from client, id: " <<activeconnections[conn_iter].clientid
+                    << " fd: " << activeconnections[conn_iter].socket << endl;
                 }
-                close(activeconnections[conn_iter].socket);
                 FD_CLR(activeconnections[conn_iter].socket, &master);
+                close(activeconnections[conn_iter].socket);
                 activeconnections.erase(activeconnections.begin()+conn_iter);
                 conn_iter --;
             } else {
@@ -255,9 +262,10 @@ void read_from_clients(void) {
 */
 void* read_from_client(void *arg) {
     int nbytes;
-    char buf[MAXBUFLEN];
+    unsigned char buf[MAXBUFLEN];
     Connection *client = (Connection *) arg;
-    cout << "Client id: " << client->clientid << " - read thread running" << endl;
+    cout << "Client id: " << client->clientid << " fd:" << client->socket 
+    << " - read thread running" << endl;
     while(1) {
         if (FD_ISSET(client->socket, &read_fds)) {
         nbytes = recv(client->socket, buf, MAXBUFLEN, 0);
@@ -265,13 +273,16 @@ void* read_from_client(void *arg) {
                 // got error or connection closed by client
                 if (nbytes == 0) {
                     // connection closed
-                    cerr << "Client closed connection, id:" << client->clientid << " fd: " << client->socket << endl;
+                    cerr << "Client closed connection, id:" << client->clientid 
+                    << " fd: " << client->socket << endl;
                 } else {
-                    cerr << "received err from client" << endl;
+                    cerr << "received err from client, id:" << client->clientid 
+                    << " fd: " << client->socket << endl;
                 }
-                close(client->socket);
                 FD_CLR(client->socket, &master);
-                cout << "Client id: " << client->clientid << " fd: " << client->socket << " - read thread terminating" << endl;
+                close(client->socket);
+                cout << "Client id: " << client->clientid << " fd: " << client->socket 
+                << " - read thread terminating" << endl;
                 size_t conn_pos = 0;
                 for(; conn_pos < activeconnections.size(); conn_pos++) {
                     if(activeconnections[conn_pos].clientid == client->clientid)
@@ -284,6 +295,7 @@ void* read_from_client(void *arg) {
                 process_client_message(packet, client);
             }
         } /*else {
+            cout << client->clientid << " thread sleep" << endl;
             sleep(100);
         }*/
     }
@@ -305,7 +317,7 @@ void accept_connections(void) {
             FD_SET(newfd, &master);
             if (newfd > highestsocket) highestsocket = newfd;
             cout << "New client connected - " << inet_ntoa(remoteaddr.sin_addr) << ":" << remoteaddr.sin_port 
-            << " localid : " << server_curr_clientid << " fd : " << newfd << endl;
+            << " id: " << server_curr_clientid << " fd: " << newfd << endl;
             Connection newconn(newfd, server_curr_clientid);
             server_curr_clientid ++;
             activeconnections.push_back(newconn);
@@ -331,7 +343,7 @@ void server_run() {
             } else {
                 cout << "select problem, server got errno " << errno << endl;   
                 cerr << "Select problem .. exiting server" << endl;
-                exit(1);
+                exit_server(1);
             }
         }
         accept_connections();
@@ -375,7 +387,7 @@ void server_init() {
 
     FD_ZERO(&master);
     FD_ZERO(&read_fds);
-    FD_SET(fileno(stdin), &master);
+    //FD_SET(fileno(stdin), &master);
     if (fileno(stdin) > highestsocket) highestsocket = fileno(stdin);
     FD_SET(serv_sock_fd, &master);
     if (serv_sock_fd > highestsocket) highestsocket = serv_sock_fd;
