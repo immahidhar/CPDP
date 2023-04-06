@@ -1,6 +1,7 @@
 #include "client.h"
 
 int cl_sock_fd = -1, highestsocket = -1;
+bool logged_in = false;
 fd_set master, read_fds;
 pthread_t cl_sock_tid;
 
@@ -10,7 +11,7 @@ pthread_t cl_sock_tid;
 void exit_client(int exit_num) {
     //FD_CLR(cl_sock_fd, &master);
     //FD_CLR(cl_sock_fd, &read_fds);
-    pthread_kill(cl_sock_tid, 0);
+    //pthread_kill(cl_sock_tid, 0);
     close(cl_sock_fd);
     cl_sock_fd = -1;
     exit(exit_num);

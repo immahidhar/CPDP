@@ -3,6 +3,11 @@
 fd_set master, read_fds;
 int serv_sock_fd = -1, highestsocket = -1, opt = 1, server_curr_clientid = 0;
 
+pthread_mutex_t mutx = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+
+struct timeval tv;
+
 /**
  * Connection class to store client info
 */
@@ -21,16 +26,14 @@ class Connection {
     }
 };
 
-vector<Connection> activeconnections;
+vector<Connection*> activeconnections;
 
 /**
  * exit server - close socket
 */
 void exit_server(int exit_num) {
-    for(size_t conn_iter = 0; conn_iter < activeconnections.size(); conn_iter++) {
-        close(activeconnections[conn_iter].socket);
-        //pthread_kill(activeconnections[conn_iter].p_tid, 0);
-    }
+    for(size_t conn_iter = 0; conn_iter < activeconnections.size(); conn_iter++)
+        close(activeconnections[conn_iter]->socket);
     close(serv_sock_fd);
     exit(exit_num);
 }
@@ -63,6 +66,7 @@ void read_config(const char* configfile) {
 void send_token_to_client(string token, Connection* conn, bool broadcast, bool ignore_login) {
     struct Packet packet;
     strcpy(packet.data, token.c_str());
+    //cout << conn->p_tid << " : send_token_to_client: " << packet.data << endl;
     if (!broadcast) {
         if(conn->loggged_in || ignore_login) {
             int send_result = send_packet_to_socket(conn->socket, &packet);
@@ -71,19 +75,21 @@ void send_token_to_client(string token, Connection* conn, bool broadcast, bool i
                 cerr << "Error sending packet to client - id: " << conn->clientid << " fd: " << conn->socket << endl;
             }
         } else {
-            cerr << "Client not logged in - id: " << conn->clientid << " fd: " << conn->socket << endl;
+            cerr << "Client not logged in - id: " << conn->clientid << " fd: " << conn->socket << " username:"
+            << conn->username << endl;
         }
     } else {
         for(size_t conn_iter = 0; conn_iter < activeconnections.size(); conn_iter++) {
-            if(conn->clientid != activeconnections[conn_iter].clientid) {
-                if(activeconnections[conn_iter].loggged_in || ignore_login) {
-                    int send_result = send_packet_to_socket(activeconnections[conn_iter].socket, &packet);
+            if(conn->clientid != activeconnections[conn_iter]->clientid) {
+                if(activeconnections[conn_iter]->loggged_in || ignore_login) {
+                    int send_result = send_packet_to_socket(activeconnections[conn_iter]->socket, &packet);
                     if (send_result == -1)  {
                         perror("send");
                         cerr << "Error sending packet to client - id: " << conn->clientid << " fd: " << conn->socket << endl;
                     }
                 } else {
-                    cerr << "Client not logged in - id: " << conn->clientid << " fd: " << conn->socket << endl;
+                    cerr << "Client not logged in - id: " << conn->clientid << " fd: " << conn->socket << " username:"
+                    << conn->username << endl;
                 }
             }
         }
@@ -106,8 +112,8 @@ Connection* check_if_user_present(string username) {
     cout << "searching username " << username << endl;
     username = string(&username.c_str()[1]);
     for(size_t conn_iter = 0; conn_iter < activeconnections.size(); conn_iter++) {
-        if(username == activeconnections[conn_iter].username) {
-            return &activeconnections[conn_iter];
+        if(username == activeconnections[conn_iter]->username) {
+            return activeconnections[conn_iter];
         }
     }
     return NULL;
@@ -228,48 +234,76 @@ void process_client_message(Packet *packet, Connection* conn) {
 /**
  * read data from clients
 */
-void read_from_clients(void) {
+/*void read_from_clients(void) {
     int nbytes;
     unsigned char buf[MAXBUFLEN];
     // run through the existing clients looking for data to read
     for(size_t conn_iter = 0; conn_iter < activeconnections.size(); conn_iter++) {
-        if (FD_ISSET(activeconnections[conn_iter].socket, &read_fds)) {
-            nbytes = recv(activeconnections[conn_iter].socket, buf, MAXBUFLEN, 0);
+        if (FD_ISSET(activeconnections[conn_iter]->socket, &read_fds)) {
+            nbytes = recv(activeconnections[conn_iter]->socket, buf, MAXBUFLEN, 0);
             if ( nbytes <= 0) {
                 // got error or connection closed by client
                 if (nbytes == 0) {
                     // connection closed
-                    cerr << "Client closed connection, id: " <<activeconnections[conn_iter].clientid
-                    << " fd: " << activeconnections[conn_iter].socket << endl;
+                    cerr << "Client closed connection, id: " <<activeconnections[conn_iter]->clientid
+                    << " fd: " << activeconnections[conn_iter]->socket << endl;
                 } else {
-                    cerr << "received err from client, id: " <<activeconnections[conn_iter].clientid
-                    << " fd: " << activeconnections[conn_iter].socket << endl;
+                    cerr << "received err from client, id: " <<activeconnections[conn_iter]->clientid
+                    << " fd: " << activeconnections[conn_iter]->socket << endl;
                 }
-                FD_CLR(activeconnections[conn_iter].socket, &master);
-                close(activeconnections[conn_iter].socket);
+                FD_CLR(activeconnections[conn_iter]->socket, &master);
+                close(activeconnections[conn_iter]->socket);
                 activeconnections.erase(activeconnections.begin()+conn_iter);
                 conn_iter --;
             } else {
                 Packet* packet = (Packet*) (buf);
-                process_client_message(packet, &activeconnections[conn_iter]);
+                process_client_message(packet, activeconnections[conn_iter]);
             }
         }
     }
-}
+}*/
 
 /**
  * Thread: Read message from client
 */
-void* read_from_client(void *arg) {
-    int nbytes;
-    unsigned char buf[MAXBUFLEN];
-    Connection *client = (Connection *) arg;
-    cout << "Client id: " << client->clientid << " fd:" << client->socket 
-    << " - read thread running" << endl;
+void* read_from_client(void* arg) {
+
+    cout << "Client id: " << ((Connection*)arg)->clientid << " fd: " << ((Connection*)arg)->socket 
+    << " - read thread " << ((Connection*)arg)->p_tid << " running" << endl;
+    
     while(1) {
+
+        pthread_mutex_lock(&mutx);
+
+        /*cout << "tid: " << pthread_self() << " has lock - oid: " << arg << " id: " << ((Connection*)arg)->clientid 
+        << " fd:" << ((Connection*)arg)->socket << " logged:" << ((Connection*)arg)->loggged_in << " username:" 
+        << ((Connection*)arg)->username << endl;*/
+
+        int nbytes;
+        unsigned char buf[MAXBUFLEN];
+        Connection* client = (Connection*) arg;
+
+        /*cout << "tid: " << pthread_self() << " has lock - oid: " << client << " id: " << client->clientid 
+        << " fd:" << client->socket << " logged:" << client->loggged_in << " username:" 
+        << client->username << endl;*/
+        
         if (FD_ISSET(client->socket, &read_fds)) {
-        nbytes = recv(client->socket, buf, MAXBUFLEN, 0);
-        if ( nbytes <= 0) {
+            
+            //cout<< pthread_self() << " : calling recv" << endl;
+            nbytes = recv(client->socket, buf, MAXBUFLEN, 0);
+            //cout<< pthread_self() << " : nbytes: " << nbytes << endl;
+            
+            if ( nbytes <= 0) {
+
+                if ((errno == EAGAIN) && (errno == EWOULDBLOCK)) {
+                    //cout << pthread_self() << " unlocking" << endl;
+                    pthread_mutex_unlock(&mutx);
+                    //sched_yield();
+                    //cout << pthread_self() << " sleep 1" << endl;
+                    usleep(THREAD_WAIT); // sleep 100 ms
+                    continue;
+                }
+
                 // got error or connection closed by client
                 if (nbytes == 0) {
                     // connection closed
@@ -285,20 +319,33 @@ void* read_from_client(void *arg) {
                 << " - read thread terminating" << endl;
                 size_t conn_pos = 0;
                 for(; conn_pos < activeconnections.size(); conn_pos++) {
-                    if(activeconnections[conn_pos].clientid == client->clientid)
+                    if(activeconnections[conn_pos]->clientid == client->clientid)
                         break;
                 }
                 activeconnections.erase(activeconnections.begin() + conn_pos);
+                //cout << pthread_self() << " unlocking" << endl;
+                pthread_mutex_unlock(&mutx);
                 return 0;
+
             } else {
-                Packet* packet = (Packet*) (buf);
-                process_client_message(packet, client);
+                //Packet* packet = (Packet*) (cl_args->buf);
+                process_client_message((Packet*) (buf), client);
+                //cout << pthread_self() << " unlocking" << endl;
+                pthread_mutex_unlock(&mutx);
+                //cout << pthread_self() << " sleep 2" << endl;
+                usleep(THREAD_WAIT); // sleep 100 ms
             }
-        } /*else {
-            cout << client->clientid << " thread sleep" << endl;
-            sleep(100);
-        }*/
+        } else {
+            //cout << pthread_self() << " unlocking" << endl;
+            pthread_mutex_unlock(&mutx);
+            //cout << pthread_self() << " sleep 3" << endl;
+            usleep(THREAD_WAIT); // sleep 100 ms
+        }
+
+        //pthread_mutex_unlock(&mutx);
+
     }
+    
     return 0;
 }
 
@@ -318,12 +365,17 @@ void accept_connections(void) {
             if (newfd > highestsocket) highestsocket = newfd;
             cout << "New client connected - " << inet_ntoa(remoteaddr.sin_addr) << ":" << remoteaddr.sin_port 
             << " id: " << server_curr_clientid << " fd: " << newfd << endl;
-            Connection newconn(newfd, server_curr_clientid);
+            Connection* newconn = new Connection(newfd, server_curr_clientid);
             server_curr_clientid ++;
             activeconnections.push_back(newconn);
-            /*pthread_t p_tid;
-            pthread_create(&p_tid, NULL, &read_from_client, (void*) &newconn);
-            newconn.p_tid = p_tid;*/
+            
+            if (setsockopt(newconn->socket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv)) {
+                perror("setsockopt");
+                exit(EXIT_FAILURE);
+            }
+
+            // execute client read thread
+            pthread_create(&(newconn->p_tid), NULL, &read_from_client, newconn);
         }
     }
 }
@@ -340,14 +392,17 @@ void server_run() {
         if (select(highestsocket+1, &read_fds, NULL, NULL, &timeout) == -1) {
             if (errno == EINTR) {
                 cout << "got the EINTR error in select" << endl;
-            } else {
+            } else if ((errno == EAGAIN) && (errno == EWOULDBLOCK)) {
+                continue;
+            }
+            else {
                 cout << "select problem, server got errno " << errno << endl;   
                 cerr << "Select problem .. exiting server" << endl;
                 exit_server(1);
             }
         }
         accept_connections();
-        read_from_clients();
+        //read_from_clients();
     }
 }
 
@@ -365,6 +420,7 @@ void server_init() {
 
     // avoid "address already in use" error message
     if (setsockopt(serv_sock_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {
+    //if (setsockopt(serv_sock_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv)) {
         perror("setsockopt");
         exit(EXIT_FAILURE);
     }
@@ -393,6 +449,9 @@ void server_init() {
     if (serv_sock_fd > highestsocket) highestsocket = serv_sock_fd;
 
     cout << "Server started on port " << SERVERPORT << endl;
+
+    tv.tv_sec = 0;
+    tv.tv_usec = THREAD_WAIT;
 }
 
 /**
@@ -402,6 +461,7 @@ int main(int argc, char** argv) {
     signal(SIGINT, sigint_function);
     read_config(SERVERCONFIG);
     server_init();
+    pthread_mutex_init(&mutx, NULL);
     server_run();
     return 0;
 }
