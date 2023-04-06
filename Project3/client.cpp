@@ -144,6 +144,7 @@ void* client_run(void *arg) {
         }
         readFromServer();
     }
+    return 0;
 }
 
 /**
@@ -206,19 +207,16 @@ int main(int argc, char** argv) {
     read_config(CLIENTCONFIG);
     client_init();
     pthread_create(&cl_sock_tid, NULL, &client_run, NULL);
-    // infinite loop
-    while (1) {
-        //cout << "$ ";
         string line;
-        getline(cin, line);
-        /*if(line == EOF) {
-            cout << "EOF detected. Exiting!" << endl;
-            exit_client();
-        }*/
+    // infinite loop
+    while (getline(cin, line)) {
+        //cout << "$ ";
         string tokens[TOKEN_LIMIT];
         string tokenss = line;
         get_tokens(tokenss, tokens);
         process_command(line, tokens);
     }
+    cout << "EOF detected, exiting client" << endl;
+    exit_client(0);
     return 0;
 }

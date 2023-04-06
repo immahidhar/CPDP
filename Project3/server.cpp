@@ -275,10 +275,6 @@ void* read_from_client(void* arg) {
 
         pthread_mutex_lock(&mutx);
 
-        /*cout << "tid: " << pthread_self() << " has lock - oid: " << arg << " id: " << ((Connection*)arg)->clientid 
-        << " fd:" << ((Connection*)arg)->socket << " logged:" << ((Connection*)arg)->loggged_in << " username:" 
-        << ((Connection*)arg)->username << endl;*/
-
         int nbytes;
         unsigned char buf[MAXBUFLEN];
         Connection* client = (Connection*) arg;
@@ -289,17 +285,12 @@ void* read_from_client(void* arg) {
         
         if (FD_ISSET(client->socket, &read_fds)) {
             
-            //cout<< pthread_self() << " : calling recv" << endl;
             nbytes = recv(client->socket, buf, MAXBUFLEN, 0);
-            //cout<< pthread_self() << " : nbytes: " << nbytes << endl;
             
             if ( nbytes <= 0) {
 
                 if ((errno == EAGAIN) && (errno == EWOULDBLOCK)) {
-                    //cout << pthread_self() << " unlocking" << endl;
                     pthread_mutex_unlock(&mutx);
-                    //sched_yield();
-                    //cout << pthread_self() << " sleep 1" << endl;
                     usleep(THREAD_WAIT); // sleep 100 ms
                     continue;
                 }
@@ -323,22 +314,17 @@ void* read_from_client(void* arg) {
                         break;
                 }
                 activeconnections.erase(activeconnections.begin() + conn_pos);
-                //cout << pthread_self() << " unlocking" << endl;
                 pthread_mutex_unlock(&mutx);
                 return 0;
 
             } else {
-                //Packet* packet = (Packet*) (cl_args->buf);
                 process_client_message((Packet*) (buf), client);
-                //cout << pthread_self() << " unlocking" << endl;
                 pthread_mutex_unlock(&mutx);
-                //cout << pthread_self() << " sleep 2" << endl;
                 usleep(THREAD_WAIT); // sleep 100 ms
             }
+
         } else {
-            //cout << pthread_self() << " unlocking" << endl;
             pthread_mutex_unlock(&mutx);
-            //cout << pthread_self() << " sleep 3" << endl;
             usleep(THREAD_WAIT); // sleep 100 ms
         }
 
@@ -365,6 +351,7 @@ void accept_connections(void) {
             if (newfd > highestsocket) highestsocket = newfd;
             cout << "New client connected - " << inet_ntoa(remoteaddr.sin_addr) << ":" << remoteaddr.sin_port 
             << " id: " << server_curr_clientid << " fd: " << newfd << endl;
+            
             Connection* newconn = new Connection(newfd, server_curr_clientid);
             server_curr_clientid ++;
             activeconnections.push_back(newconn);
@@ -394,14 +381,14 @@ void server_run() {
                 cout << "got the EINTR error in select" << endl;
             } else if ((errno == EAGAIN) && (errno == EWOULDBLOCK)) {
                 continue;
-            }
-            else {
+            } else {
                 cout << "select problem, server got errno " << errno << endl;   
-                cerr << "Select problem .. exiting server" << endl;
-                exit_server(1);
+                //cerr << "Select problem .. exiting server" << endl;
+                //exit_server(1);
             }
         }
         accept_connections();
+        //sleep(THREAD_WAIT);
         //read_from_clients();
     }
 }
