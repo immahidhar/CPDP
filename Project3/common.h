@@ -32,6 +32,9 @@
 #define MY_PACKET_LEN 10000
 #define MY_SOCK_BUFFER_LEN 50000
 
+#define LOGIN_SUCCESS " login successful."
+#define LOGOUT_SUCCESS " logout successful."
+
 using namespace std;
 
 struct Packet {

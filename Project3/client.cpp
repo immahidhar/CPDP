@@ -55,7 +55,7 @@ void sendTokenToServer(string token) {
 
 void printUsage(void) {
     cerr << "incorrect command entered!" << endl;
-    cerr << "usage:\n\tlogin username\n\tlogout\n\tchat [@username] message\n\texit" << endl;
+    cerr << "usage:\n\tlogin username\n\tchat [@username] message\n\tlogout\n\texit" << endl;
 }
 
 /**
@@ -63,27 +63,53 @@ void printUsage(void) {
 */
 void process_command(string line, string* tokens) {
     string command = tokens[0];
+
     if(command == "exit") {
-        cout << "exiting client" << endl;
-        exit_client(0);
+
+        if(!logged_in) {
+            cout << "exiting client" << endl;
+            exit_client(0);
+        } else {
+            cout << "User isn't logged out. Logout before exiting." << endl;
+        }
+
     } else if(command == "login") {
+
         if(tokens[1] == "NULL") {
             printUsage();
             return;
         }
         cout << "logging in user \"" << tokens[1] << "\"" << endl;
         sendTokenToServer(line);
+
     } else if(command == "logout") {
+
         cout << "logging out" << endl;
         sendTokenToServer(line);
+
     } else if(command == "chat") {
-        if(tokens[1] == "NULL") {
-            printUsage();
-            return;
+
+        if(logged_in) {
+            if(tokens[1] == "NULL") {
+                printUsage();
+                return;
+            }
+            sendTokenToServer(line);
+        } else {
+            cout << "User isn't logged in. Login before trying to chat." << endl;
         }
-        sendTokenToServer(line);
-    } else {
-       printUsage();
+
+    } else printUsage();
+}
+
+/**
+ * check server response for login and logout success
+*/
+void check_log_status(char* response) {
+    if(strstr(response, LOGIN_SUCCESS) != NULL) {
+        logged_in = true;
+    } else if(strstr(response, LOGOUT_SUCCESS) != NULL) {
+        logged_in = false;
     }
 }
 
@@ -91,7 +117,10 @@ void process_command(string line, string* tokens) {
  * Process message received from server
 */
 void process_server_message(Packet *packet) {
+    check_log_status(packet->data);
     cout << packet->data << endl;
+    cout << "$ ";
+    fflush(stdout);
 }
 
 /**
@@ -204,17 +233,24 @@ void client_init(void) {
 */
 int main(int argc, char** argv) {
     signal(SIGINT, sigint_function);
-    read_config(CLIENTCONFIG);
+    if(argc < 2) {
+        cout << "usage: client.x chat_server_config_filename" << endl;
+        exit(1);
+    }
+    read_config(argv[1]);
     client_init();
     pthread_create(&cl_sock_tid, NULL, &client_run, NULL);
-        string line;
+    cout << "$ ";
+    fflush(stdout);
+    string line;
     // infinite loop
     while (getline(cin, line)) {
-        //cout << "$ ";
         string tokens[TOKEN_LIMIT];
         string tokenss = line;
         get_tokens(tokenss, tokens);
         process_command(line, tokens);
+        cout << "$ ";
+        fflush(stdout);
     }
     cout << "EOF detected, exiting client" << endl;
     exit_client(0);

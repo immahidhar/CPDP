@@ -108,7 +108,7 @@ bool check_if_username_present(string username) {
 /**
  * Search for user by username among activeconnections i.e. clients
 */
-Connection* check_if_user_present(string username) {
+Connection* get_user_connection(string username) {
     cout << "searching username " << username << endl;
     username = string(&username.c_str()[1]);
     for(size_t conn_iter = 0; conn_iter < activeconnections.size(); conn_iter++) {
@@ -137,7 +137,7 @@ void chat(string* tokens, Connection* conn) {
     get_tokens(chat_tokenss, chat_tokens);
 
     if(check_if_username_present(chat_tokens[0])) {
-        Connection* r_conn = check_if_user_present(chat_tokens[0]);
+        Connection* r_conn = get_user_connection(chat_tokens[0]);
         if(r_conn != NULL) {
             if(r_conn->loggged_in) {
                 string chat = conn->username + " >> " + chat_tokens[1];
@@ -161,7 +161,7 @@ void chat(string* tokens, Connection* conn) {
     } else {
         string chat = conn->username + " >> " + chat_tokenss;
         send_token_to_client(chat, conn, true, false);
-        string response = "chat broadcasted!";
+        string response = "chat broadcasted";
         response = "server >> " + response;
         cout << response << endl;
         send_token_to_client(response, conn, false, true);
@@ -181,12 +181,15 @@ void logout(string* tokens, Connection* conn) {
         return;
     }
     cout << "logging out user " << conn->username << endl;
-    string response = "User \"" + conn->username + "\" logged out.";
+    string response = "User \"" + conn->username + "\"" + LOGOUT_SUCCESS;
     conn->loggged_in = false;
     //conn->setUsername("");
     response = "server >> " + response;
     cout << response << endl;
     send_token_to_client(response, conn, false, true);
+    response = "User \"" + conn->username + "\" left the chat.";
+    response = "server >> " + response;
+    send_token_to_client(response, conn, true, true);
 }
 
 /**
@@ -194,19 +197,30 @@ void logout(string* tokens, Connection* conn) {
 */
 void login(string* tokens, Connection* conn) {
     if(conn->loggged_in) {
-        string response = "User " + conn->username + " is already logged in.";
+        string response = "You're already logged in. Username: " + conn->username;
         response = "server >> " + response;
         cout << response << endl;
         send_token_to_client(response, conn, false, true);
         return;
     }
     cout << "logging in user " << tokens[1] << endl;
-    conn->username = tokens[1];
-    conn->loggged_in = true;
-    string response = "User \"" + conn->username + "\" logged in.";
-    response = "server >> " + response;
-    cout << response << endl;
-    send_token_to_client(response, conn, false, true);
+
+    if(get_user_connection("@" + tokens[1]) != NULL) {
+        string response = "User \"" + tokens[1] + "\" already present. Please choose another username.";
+        response = "server >> " + response;
+        cout << response << endl;
+        send_token_to_client(response, conn, false, true);
+    } else {
+        conn->username = tokens[1];
+        conn->loggged_in = true;
+        string response = "User \"" + conn->username + "\"" + LOGIN_SUCCESS;
+        response = "server >> " + response;
+        cout << response << endl;
+        send_token_to_client(response, conn, false, true);
+        response = "User \"" + conn->username + "\" has joined the chat.";
+        response = "server >> " + response;
+        send_token_to_client(response, conn, true, true);
+    }
 }
 
 /**
@@ -224,7 +238,10 @@ void process_command(string* tokens, Connection* conn) {
 */
 void process_client_message(Packet *packet, Connection* conn) {
     string client_message(packet->data);
-    cout << conn->username << " >> " << client_message << endl;
+    if (conn->username != "")
+        cout << conn->username << " >> " << client_message << endl;
+    else
+        cout << "user" << conn->clientid << " >> " << client_message << endl;
     string tokens[TOKEN_LIMIT];
     string tokenss = client_message;
     get_tokens(tokenss, tokens);
@@ -268,8 +285,8 @@ void process_client_message(Packet *packet, Connection* conn) {
 */
 void* read_from_client(void* arg) {
 
-    cout << "Client id: " << ((Connection*)arg)->clientid << " fd: " << ((Connection*)arg)->socket 
-    << " - read thread " << ((Connection*)arg)->p_tid << " running" << endl;
+    /*cout << "Client id: " << ((Connection*)arg)->clientid << " fd: " << ((Connection*)arg)->socket 
+    << " - read thread " << ((Connection*)arg)->p_tid << " running" << endl;*/
     
     while(1) {
 
@@ -304,28 +321,38 @@ void* read_from_client(void* arg) {
                     cerr << "received err from client, id:" << client->clientid 
                     << " fd: " << client->socket << endl;
                 }
+
                 FD_CLR(client->socket, &master);
                 close(client->socket);
-                cout << "Client id: " << client->clientid << " fd: " << client->socket 
-                << " - read thread terminating" << endl;
+                /*cout << "Client id: " << client->clientid << " fd: " << client->socket 
+                << " - read thread terminating" << endl;*/
                 size_t conn_pos = 0;
                 for(; conn_pos < activeconnections.size(); conn_pos++) {
                     if(activeconnections[conn_pos]->clientid == client->clientid)
                         break;
                 }
                 activeconnections.erase(activeconnections.begin() + conn_pos);
+
+                string response = "User \"" + client->username + "\" is disconnected from chat.";
+                response = "server >> " + response;
+                send_token_to_client(response, client, true, true);
+
                 pthread_mutex_unlock(&mutx);
                 return 0;
 
             } else {
+
                 process_client_message((Packet*) (buf), client);
                 pthread_mutex_unlock(&mutx);
                 usleep(THREAD_WAIT); // sleep 100 ms
+
             }
 
         } else {
+
             pthread_mutex_unlock(&mutx);
             usleep(THREAD_WAIT); // sleep 100 ms
+
         }
 
         //pthread_mutex_unlock(&mutx);
@@ -351,7 +378,7 @@ void accept_connections(void) {
             if (newfd > highestsocket) highestsocket = newfd;
             cout << "New client connected - " << inet_ntoa(remoteaddr.sin_addr) << ":" << remoteaddr.sin_port 
             << " id: " << server_curr_clientid << " fd: " << newfd << endl;
-            
+
             Connection* newconn = new Connection(newfd, server_curr_clientid);
             server_curr_clientid ++;
             activeconnections.push_back(newconn);
@@ -446,7 +473,11 @@ void server_init() {
 */
 int main(int argc, char** argv) {
     signal(SIGINT, sigint_function);
-    read_config(SERVERCONFIG);
+    if(argc < 2) {
+        cout << "usage: server.x chat_server_config_filename" << endl;
+        exit(1);
+    }
+    read_config(argv[1]);
     server_init();
     pthread_mutex_init(&mutx, NULL);
     server_run();
