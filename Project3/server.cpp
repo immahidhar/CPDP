@@ -283,12 +283,14 @@ void process_client_message(Packet *packet, Connection* conn) {
 */
 void* read_from_client(void* arg) {
 
-    /*cout << "Client id: " << ((Connection*)arg)->clientid << " fd: " << ((Connection*)arg)->socket 
-    << " - read thread " << ((Connection*)arg)->p_tid << " running" << endl;*/
+    cout << "Client id: " << ((Connection*)arg)->clientid << " fd: " << ((Connection*)arg)->socket 
+    << " - read thread " << pthread_self() << " running" << endl;
     
     while(1) {
 
         pthread_mutex_lock(&mutx);
+
+        cout << pthread_self() << " has lock" << endl;
 
         int nbytes;
         unsigned char buf[MAXBUFLEN];
@@ -318,8 +320,8 @@ void* read_from_client(void* arg) {
 
                 FD_CLR(client->socket, &master);
                 close(client->socket);
-                /*cout << "Client id: " << client->clientid << " fd: " << client->socket 
-                << " - read thread terminating" << endl;*/
+                cout << "Client id: " << client->clientid << " fd: " << client->socket 
+                << " - read thread " << pthread_self() << " terminating" << endl;
                 size_t conn_pos = 0;
                 for(; conn_pos < activeconnections.size(); conn_pos++) {
                     if(activeconnections[conn_pos]->clientid == client->clientid)
