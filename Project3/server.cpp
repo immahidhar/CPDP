@@ -303,6 +303,8 @@ void* read_from_client(void* arg) {
             if ( nbytes <= 0) {
 
                 if ((errno == EAGAIN) && (errno == EWOULDBLOCK)) {
+                    cout << pthread_self() << "recv timeout, client id:" << client->clientid 
+                    << " fd:" << client->socket << endl;
                     pthread_mutex_unlock(&mutx);
                     usleep(THREAD_WAIT); // sleep 100 ms
                     continue;
