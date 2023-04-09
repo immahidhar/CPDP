@@ -66,7 +66,6 @@ void read_config(const char* configfile) {
 void send_token_to_client(string token, Connection* conn, bool broadcast, bool ignore_login) {
     struct Packet packet;
     strcpy(packet.data, token.c_str());
-    //cout << conn->p_tid << " : send_token_to_client: " << packet.data << endl;
     if (!broadcast) {
         if(conn->loggged_in || ignore_login) {
             int send_result = send_packet_to_socket(conn->socket, &packet);
@@ -183,7 +182,6 @@ void logout(string* tokens, Connection* conn) {
     cout << "logging out user " << conn->username << endl;
     string response = "User \"" + conn->username + "\"" + LOGOUT_SUCCESS;
     conn->loggged_in = false;
-    //conn->setUsername("");
     response = "server >> " + response;
     cout << response << endl;
     send_token_to_client(response, conn, false, true);
@@ -295,10 +293,6 @@ void* read_from_client(void* arg) {
         int nbytes;
         unsigned char buf[MAXBUFLEN];
         Connection* client = (Connection*) arg;
-
-        /*cout << "tid: " << pthread_self() << " has lock - oid: " << client << " id: " << client->clientid 
-        << " fd:" << client->socket << " logged:" << client->loggged_in << " username:" 
-        << client->username << endl;*/
         
         if (FD_ISSET(client->socket, &read_fds)) {
             
@@ -389,7 +383,7 @@ void accept_connections(void) {
             }
 
             // execute client read thread
-            pthread_create(&(newconn->p_tid), NULL, &read_from_client, newconn);
+            pthread_create(&(newconn->p_tid), NULL, read_from_client, newconn);
         }
     }
 }
@@ -434,7 +428,6 @@ void server_init() {
 
     // avoid "address already in use" error message
     if (setsockopt(serv_sock_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {
-    //if (setsockopt(serv_sock_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv)) {
         perror("setsockopt");
         exit(EXIT_FAILURE);
     }

@@ -239,7 +239,7 @@ int main(int argc, char** argv) {
     }
     read_config(argv[1]);
     client_init();
-    pthread_create(&cl_sock_tid, NULL, &client_run, NULL);
+    pthread_create(&cl_sock_tid, NULL, client_run, NULL);
     cout << "$ ";
     fflush(stdout);
     string line;
