@@ -288,9 +288,9 @@ void* read_from_client(void* arg) {
     
     while(1) {
 
-        pthread_mutex_lock(&mutx);
+        //pthread_mutex_lock(&mutx);
 
-        cout << pthread_self() << " has lock" << endl;
+        //cout << pthread_self() << " has lock" << endl;
 
         int nbytes;
         unsigned char buf[MAXBUFLEN];
@@ -302,13 +302,13 @@ void* read_from_client(void* arg) {
             
             if ( nbytes <= 0) {
 
-                if ((errno == EAGAIN) && (errno == EWOULDBLOCK)) {
-                    cout << pthread_self() << "recv timeout, client id:" << client->clientid 
+                /*if ((errno == EAGAIN) && (errno == EWOULDBLOCK)) {
+                    cout << pthread_self() << " recv timeout, client id:" << client->clientid 
                     << " fd:" << client->socket << endl;
-                    pthread_mutex_unlock(&mutx);
+                    //pthread_mutex_unlock(&mutx);
                     usleep(THREAD_WAIT); // sleep 100 ms
                     continue;
-                }
+                }*/
 
                 // got error or connection closed by client
                 if (nbytes == 0) {
@@ -335,20 +335,20 @@ void* read_from_client(void* arg) {
                 response = "server >> " + response;
                 send_token_to_client(response, client, true, true);
 
-                pthread_mutex_unlock(&mutx);
+                //pthread_mutex_unlock(&mutx);
                 return 0;
 
             } else {
 
                 process_client_message((Packet*) (buf), client);
-                pthread_mutex_unlock(&mutx);
+                //pthread_mutex_unlock(&mutx);
                 usleep(THREAD_WAIT); // sleep 100 ms
 
             }
 
         } else {
 
-            pthread_mutex_unlock(&mutx);
+            //pthread_mutex_unlock(&mutx);
             usleep(THREAD_WAIT); // sleep 100 ms
 
         }
@@ -381,10 +381,10 @@ void accept_connections(void) {
             server_curr_clientid ++;
             activeconnections.push_back(newconn);
             
-            if (setsockopt(newconn->socket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv)) {
+            /*if (setsockopt(newconn->socket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv)) {
                 perror("setsockopt");
                 exit(EXIT_FAILURE);
-            }
+            }*/
 
             // execute client read thread
             pthread_create(&(newconn->p_tid), NULL, &read_from_client, newconn);
@@ -404,12 +404,12 @@ void server_run() {
         if (select(highestsocket+1, &read_fds, NULL, NULL, &timeout) == -1) {
             if (errno == EINTR) {
                 cout << "got the EINTR error in select" << endl;
-            } else if ((errno == EAGAIN) && (errno == EWOULDBLOCK)) {
+            } /*else if ((errno == EAGAIN) && (errno == EWOULDBLOCK)) {
                 continue;
-            } else {
+            }*/ else {
                 cout << "select problem, server got errno " << errno << endl;   
-                //cerr << "Select problem .. exiting server" << endl;
-                //exit_server(1);
+                cerr << "Select problem .. exiting server" << endl;
+                exit_server(1);
             }
         }
         accept_connections();
