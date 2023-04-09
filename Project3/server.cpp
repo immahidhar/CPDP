@@ -383,7 +383,7 @@ void accept_connections(void) {
             }
 
             // execute client read thread
-            pthread_create(&(newconn->p_tid), NULL, read_from_client, newconn);
+            pthread_create(&(newconn->p_tid), NULL, &read_from_client, newconn);
         }
     }
 }
