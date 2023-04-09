@@ -4,7 +4,7 @@
 
 #include "common.h"
 
-#define THREAD_WAIT 999999 //100000 // microseconds
+#define THREAD_WAIT 100000 // microseconds
 
 const char* SERVERCONFIG = "chat_server_configuration_file";
 int SERVERPORT = 51000;
