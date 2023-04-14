@@ -7,19 +7,29 @@
 #include <signal.h>
 
 #define DEFAULT_SERVER_PORT 9000
-#define DEFAULT_BUFFER_SIZE 50000
+#define DEFAULT_BUFFER_SIZE 1024
 #define DEFAULT_MAX_CLIENTS 10
 
-int server_sock;                        // server socket descriptor
-struct sockaddr_in server_addr;         // server address structure
-int client_socks[DEFAULT_MAX_CLIENTS];  // client socket descriptors
-char* client_usernames[DEFAULT_MAX_CLIENTS]; // usernames of clients
+int server_sock;                            // server socket descriptor
+struct sockaddr_in server_addr;             // server address structure
+int client_socks[DEFAULT_MAX_CLIENTS];      // client socket descriptors
+char* client_usernames[DEFAULT_MAX_CLIENTS];// usernames of clients
 
 int SERVER_PORT = DEFAULT_SERVER_PORT;      // server port number
 int BUFFER_SIZE = DEFAULT_BUFFER_SIZE;      // buffer size for messages
 int MAX_CLIENTS = DEFAULT_MAX_CLIENTS;      // maximum number of clients
 
-void cleanup()
+void printUsernames() 
+{
+    printf("\n");
+    for (int i = 0; i < MAX_CLIENTS; i++)
+    {
+        printf("%s\n", client_usernames[i]);
+    }
+    printf("\n");
+}
+
+void cleanup(void)
 {
     // close all client sockets
     for (int i = 0; i < MAX_CLIENTS; i++)
@@ -35,42 +45,193 @@ void cleanup()
 }
 
 // Signal handler function
-void signalHandler(int signal) {
+void signalHandler(int signal) 
+{
     // Handle the signal here
     printf("Received signal: %d\n", signal);
     cleanup();
     exit(0);
 }
 
+void chat(char* chat_token, int client_index)
+{
+    //printUsernames();
+    //printf("chat token: %s\n", chat_token);
+
+    // check if user is logged in
+    if(strcmp(client_usernames[client_index], "") == 0)
+    {
+        // user isn't logged in
+        // send back response
+        char* response = "server >> User is not logged in to chat.";
+        printf("%s\n", response);
+        int sr = send(client_socks[client_index], response, strlen(response), 0);
+        if(sr < 0)
+        {
+            fprintf(stderr, "Error broadcasting data to client id: %d, socket: %d\n", 
+            client_index, client_socks[client_index]);
+            return;
+        }
+        return;
+    }
+
+    // check if chat or broadcast
+    if(chat_token[0] == '@')
+    {
+        // private chat
+        chat_token = &chat_token[1];
+        int ci;
+        for(ci = 0; ci <= strlen(chat_token); ci++) 
+        {
+            if(chat_token[ci] == ' ') 
+            {
+                break;
+            }
+        }
+        char* username = (char*)malloc(sizeof(char)*(ci+1));
+        memcpy(username, chat_token, ci+1);
+        username[ci] = '\0';
+        printf("chat need to be sent to %s, searching ...\n", username);
+
+        // search for username
+        for (int i = 0; i < MAX_CLIENTS; i++)
+        {
+            if(strcmp(client_usernames[i], "") != 0)
+            {
+                if(strcmp(client_usernames[i], username) == 0)
+                {
+                    printf("found user %s\n", username);
+                    char* message = malloc(sizeof(char)*(strlen(chat_token)-ci));
+                    message = realloc(message, sizeof(message) + strlen(client_usernames[client_index]) + 3);
+                    strcpy(message, client_usernames[client_index]);
+                    strcat(message, " >> ");
+                    strcat(message, &chat_token[ci+1]);
+                    //printf("chat message: %s\n", message);
+                    // send chat message
+                    int sr = send(client_socks[i], message, strlen(message), 0);
+                    if(sr < 0)
+                    {
+                        fprintf(stderr, "Error sending chat data to client id: %d, socket: %d\n", 
+                        i, client_socks[i]);
+                    }
+                    return;
+                }
+            }
+        }
+
+        // no user found
+        // send back response
+        char* response = "server >> No user by that username to chat.";
+        printf("%s\n", response);
+        int sr = send(client_socks[client_index], response, strlen(response), 0);
+        if(sr < 0)
+        {
+            fprintf(stderr, "Error broadcasting data to client id: %d, socket: %d\n", 
+            client_index, client_socks[client_index]);
+            return;
+        }
+
+    }
+    else
+    {
+        // broadcast to all clients except the sender
+        char* username = client_usernames[client_index];
+        char* broadcast = malloc(strlen(username) + 1);
+        strcpy(broadcast, username);
+        broadcast = realloc(broadcast, sizeof(broadcast) + sizeof(chat_token) + 3);
+        strcat(broadcast, " >> ");
+        strcat(broadcast, chat_token);
+        printf("%s\n", broadcast);
+        for (int i = 0; i < MAX_CLIENTS; i++)
+        {
+            int sd = client_socks[i];
+            if(sd == -1 || i == client_index)
+            {
+                 continue;
+            }
+            else if(strcmp(client_usernames[i], "") != 0)
+            {
+                // send broadcast message
+                int sr = send(client_socks[i], broadcast, strlen(broadcast), 0);
+                if(sr < 0)
+                {
+                    fprintf(stderr, "Error broadcasting data to client id: %d, socket: %d\n", 
+                    i, client_socks[i]);
+                }
+            }
+
+        }
+    }
+}
+
 void handle_client_request(char* client_request, int client_index)
 {
     // Extract the first token
-    char* command = strtok(client_request, " ");
-    char** token;
-    int j = 0;
-    while( token != NULL ) {
-      token[j] = strtok(NULL, " ");
-      j++;
-   }
+    int ci;
+    for(ci = 0; ci <= strlen(client_request); ci++) 
+    {
+        if(client_request[ci] == ' ') 
+        {
+            break;
+        }
+    }
+    char command[ci+1];
+    memcpy(command, client_request, ci+1);
+    command[ci] = '\0';
+    //printf("%s\n", command);
     if(strcmp(command, "login") == 0)
     {
-        
+        char* username = &client_request[ci+1];
+        //printf("%s\n", username);
+        client_usernames[client_index] = username;
         printf("logging in client id:%d, socket:%d username: %s\n", 
-        client_index, client_socks[client_index], token[0]);
+        client_index, client_socks[client_index], client_usernames[client_index]);
+        //printUsernames();
+        // send back response
+        char* response = "server >> login successful";
+        int sr = send(client_socks[client_index], response, strlen(response), 0);
+        if(sr < 0)
+        {
+            fprintf(stderr, "Error broadcasting data to client id: %d, socket: %d\n", 
+            client_index, client_socks[client_index]);
+        }
     }
     else if(strcmp(command, "logout") == 0) 
     {
         printf("logging out client username: %s id:%d, socket:%d\n", 
         client_usernames[client_index], client_index, client_socks[client_index]);
         client_usernames[client_index] = "";
+        // send back response
+        char* response = "server >> logout successful";
+        int sr = send(client_socks[client_index], response, strlen(response), 0);
+        if(sr < 0)
+        {
+            fprintf(stderr, "Error broadcasting data to client id: %d, socket: %d\n", 
+            client_index, client_socks[client_index]);
+        }
     }
     else if(strcmp(command, "chat") == 0) 
     {
-        printf("chat yet to be implemented");
+        char* chat_token = &client_request[ci+1];
+        chat(chat_token, client_index);
+        // send back response
+    }
+    else
+    {
+        fprintf(stderr, "unknown command received on client username: %s id:%d, socket:%d\n", 
+        client_usernames[client_index], client_index, client_socks[client_index]);
+        // send back response
+        char* response = "server >> Unknown command received.";
+        int sr = send(client_socks[client_index], response, strlen(response), 0);
+        if(sr < 0)
+        {
+            fprintf(stderr, "Error broadcasting data to client id: %d, socket: %d\n", 
+            client_index, client_socks[client_index]);
+        }
     }
 }
 
-void setup_server()
+void setup_server(void)
 {
     // create socket
     server_sock = socket(PF_INET, SOCK_STREAM, 0);
@@ -111,10 +272,11 @@ void setup_server()
     for (int i = 0; i < MAX_CLIENTS; i++)
     {
         client_socks[i] = -1;
+        client_usernames[i] = "";
     }
 }
 
-void handle_clients()
+void handle_clients(void)
 {   
     // infinite loop
     while (1)
@@ -206,7 +368,8 @@ void handle_clients()
                     struct sockaddr_in client_addr;
                     socklen_t client_addr_len = sizeof(client_addr);
                     getpeername(sd, (struct sockaddr *)&client_addr, &client_addr_len);
-                    printf("Client disconnected: %s:%d\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
+                    printf("Client disconnected: %s:%d id: %d socket: %d\n", inet_ntoa(client_addr.sin_addr), 
+                    ntohs(client_addr.sin_port), i, client_socks[i]);
                     close(sd);
                     client_socks[i] = -1;
                     client_usernames[i] = "";
@@ -214,8 +377,8 @@ void handle_clients()
                 else if (valread < 0)
                 {
                     // client socket error
-                    perror("Error receiving data from client");
-                    fprintf(stderr, "Disconnecting client id: %d, socket: %d", i, sd);
+                    fprintf(stderr, "Error receiving data from client\n");
+                    fprintf(stderr, "Disconnecting client id: %d, socket: %d\n", i, sd);
                     close(sd);
                     client_socks[i] = -1;
                     client_usernames[i] = "";
@@ -225,9 +388,10 @@ void handle_clients()
                     // process received data
                     buffer[valread] = '\0';
                     printf("Received data from client %d: %s\n", sd, buffer);
-                    //char* client_request;
-                    //memcpy(client_request, buffer, sizeof(buffer));
-                    handle_client_request(buffer, i);
+                    char* client_request = (char*) malloc(sizeof(char)*valread);
+                    strcpy(client_request, buffer);
+                    //printf("%s\n", client_request);
+                    handle_client_request(client_request, i);
                 }
             }
         }
@@ -236,17 +400,21 @@ void handle_clients()
 
 int main(int argc, char** argv)
 {
-    if(argc < 2) {
-        fprintf(stderr, "usage: ./server server_config_filename");
+    if(argc != 2) 
+    {
+        fprintf(stderr, "usage: ./server.x server_config_filename\n");
         exit(1);
     }
     // read server config
     FILE* f = fopen(argv[1],"r");
-    if (f) {
+    if (f) 
+    {
         fscanf(f, "port=%d\n", &SERVER_PORT);
         fclose(f);
-    } else {
-        fprintf(stderr, "Error reading server configuration file");
+    } 
+    else 
+    {
+        fprintf(stderr, "Error reading server configuration file\n");
         exit(1);
     }
 

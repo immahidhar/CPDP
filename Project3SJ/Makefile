@@ -8,12 +8,12 @@ OBJ = $(OBJ_SERVER) $(OBJ_CLIENT)
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-all: server client
+all: server.x client.x
 
-server: $(OBJ_SERVER)
+server.x: $(OBJ_SERVER)
 	$(CC) -o $@ $^ $(CFLAGS)
 
-client: $(OBJ_CLIENT)
+client.x: $(OBJ_CLIENT)
 	$(CC) -o $@ $^ $(CFLAGS)
 
 .PHONY: clean

@@ -480,7 +480,7 @@ void server_init() {
  * entry point for server
 */
 int main(int argc, char** argv) {
-    if(argc < 2) {
+    if(argc != 2) {
         cout << "usage: server.x chat_server_config_filename" << endl;
         exit(1);
     }
