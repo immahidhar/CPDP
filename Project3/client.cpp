@@ -23,7 +23,7 @@ void exit_client(int exit_num) {
  * SIGINT handler to close opened sockets
 */
 void sigint_function(int signum) {
-    cout << endl << "SIGINT received: Shutting down client" << endl;
+    cout << endl << "SIGINT received: Closing socket and shutting down client" << endl;
     exit_client(0);
 }
 
@@ -248,11 +248,11 @@ void process_command(string line, string* tokens) {
  * entry point for server
 */
 int main(int argc, char** argv) {
-    signal(SIGINT, sigint_function);
     if(argc < 2) {
         cout << "usage: client.x chat_server_config_filename" << endl;
         exit(1);
     }
+    signal(SIGINT, sigint_function);
     read_config(argv[1]);
     client_init();
     pthread_create(&cl_sock_tid, NULL, &client_run, NULL);

@@ -50,7 +50,7 @@ void exit_server(int exit_num) {
  * SIGINT handler to close opened sockets
 */
 void sigint_function(int signum) {
-    cout << endl << "SIGINT received: Shutting down server" << endl;
+    cout << endl << "SIGINT received: Closing sockets and shutting down server" << endl;
     exit_server(0);
 }
 
@@ -480,11 +480,11 @@ void server_init() {
  * entry point for server
 */
 int main(int argc, char** argv) {
-    signal(SIGINT, sigint_function);
     if(argc < 2) {
         cout << "usage: server.x chat_server_config_filename" << endl;
         exit(1);
     }
+    signal(SIGINT, sigint_function);
     read_config(argv[1]);
     server_init();
     pthread_mutex_init(&mutx, NULL);
