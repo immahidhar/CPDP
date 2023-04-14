@@ -31,6 +31,9 @@
 #define MAXBUFLEN 100000
 #define MY_PACKET_LEN 10000
 #define MY_SOCK_BUFFER_LEN 50000
+// microseconds
+#define THREAD_WAIT 100000 
+#define SELECT_WAIT 1000
 
 #define LOGIN_SUCCESS " login successful."
 #define LOGOUT_SUCCESS " logout successful."

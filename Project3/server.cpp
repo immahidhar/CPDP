@@ -32,8 +32,14 @@ vector<Connection*> activeconnections;
  * exit server - close socket
 */
 void exit_server(int exit_num) {
-    for(size_t conn_iter = 0; conn_iter < activeconnections.size(); conn_iter++)
+    for(size_t conn_iter = 0; conn_iter < activeconnections.size(); conn_iter++) {
+        FD_CLR(activeconnections[conn_iter]->socket, &master);
+    }
+    // sleep before closing socket to avoid select error - this wait has to be more than select wait
+    usleep(THREAD_WAIT);
+    for(size_t conn_iter = 0; conn_iter < activeconnections.size(); conn_iter++) {
         close(activeconnections[conn_iter]->socket);
+    }
     close(serv_sock_fd);
     exit(exit_num);
 }
@@ -317,10 +323,12 @@ void* read_from_client(void* arg) {
                     << " fd: " << client->socket << endl;
                 } else {
                     cerr << "received err from client, id:" << client->clientid 
-                    << " fd: " << client->socket << endl;
+                    << " fd: " << client->socket << " , server got errno " << errno << endl;
                 }
 
                 FD_CLR(client->socket, &master);
+                // sleep before closing socket to avoid select error - this wait has to be more than select wait
+                usleep(THREAD_WAIT); 
                 close(client->socket);
                 /*cout << "Client id: " << client->clientid << " fd: " << client->socket 
                 << " - read thread " << pthread_self() << " terminating" << endl;*/
@@ -397,18 +405,16 @@ void accept_connections(void) {
 */
 void server_run() {
     while (1) {
-        struct timeval timeout;
-        timeout.tv_sec = 0;
-        timeout.tv_usec = 1000;
+        struct timeval stv;
+        stv.tv_sec = 0;
+        stv.tv_usec = SELECT_WAIT;
         read_fds = master; 
-        if (select(highestsocket+1, &read_fds, NULL, NULL, &timeout) == -1) {
+        if (select(highestsocket+1, &read_fds, NULL, NULL, &stv) == -1) {
             if (errno == EINTR) {
                 cout << "got the EINTR error in select" << endl;
-            } /*else if ((errno == EAGAIN) && (errno == EWOULDBLOCK)) {
-                continue;
-            }*/ else {
-                cout << "select problem, server got errno " << errno << endl;   
-                cerr << "Select problem .. exiting server" << endl;
+            } else {
+                perror("select");
+                cerr << "server got errno " << errno << ", exiting server" << endl;
                 exit_server(1);
             }
         }

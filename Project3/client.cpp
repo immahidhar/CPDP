@@ -1,17 +1,19 @@
 #include "client.h"
 
 int cl_sock_fd = -1, highestsocket = -1;
-bool logged_in = false;
+bool logged_in = false, exiting = false;
 fd_set master, read_fds;
+struct timeval timeout;
 pthread_t cl_sock_tid;
 
 /**
  * exit client
 */
 void exit_client(int exit_num) {
-    //FD_CLR(cl_sock_fd, &master);
-    //FD_CLR(cl_sock_fd, &read_fds);
-    //pthread_kill(cl_sock_tid, 0);
+    exiting = true;
+    FD_CLR(cl_sock_fd, &master);
+    FD_CLR(cl_sock_fd, &read_fds);
+    usleep(timeout.tv_usec);
     close(cl_sock_fd);
     cl_sock_fd = -1;
     exit(exit_num);
@@ -137,12 +139,9 @@ void readFromServer(void) {
             if (nbytes == 0) {
                 cout << "server closed connection!" << endl;
             } else {
-                cout << "client recv error from server!" << endl;
+                cout << "client recv error from server!, got errno " << errno << endl;
             }
-            FD_CLR(cl_sock_fd, &master);
-            close(cl_sock_fd);
-            cl_sock_fd = -1;
-            exit(1);
+            exit_client(1);
         } else {
             Packet* packet = (Packet*) (buf);
             process_server_message(packet);
@@ -155,19 +154,20 @@ void readFromServer(void) {
 */
 void* client_run(void *arg) {
     pthread_detach(pthread_self());
-    //cout << "Server socket read thread running" << endl;
+    //cout << "Server socket select read thread running" << endl;
     // infinite loop
     while(1) {
-        struct timeval timeout;
-        timeout.tv_sec = 0;
-        timeout.tv_usec = 1000;
-        read_fds = master; 
+        if(exiting) {
+            //cout << "stopping select read thread" << endl;
+            pthread_exit(NULL);
+        }
         read_fds = master;
         if (select(highestsocket+1, &read_fds, NULL, NULL, &timeout) == -1) {
             if (errno == EINTR) {
                 cerr << "Select for client interrupted by interrupt..." << endl;
-            } else {
-                cerr << "Select problem .. client exiting iteration" << endl;
+            } else{
+                perror("select");
+                cerr << "client got errno " << errno << ", exiting client" << endl;
                 exit_client(1);
             }
         }
@@ -226,6 +226,8 @@ void client_init(void) {
             highestsocket = cl_sock_fd;
         } 
     }
+    timeout.tv_sec = 0;
+    timeout.tv_usec = SELECT_WAIT;
 }
 
 /**
