@@ -19,16 +19,6 @@ int SERVER_PORT = DEFAULT_SERVER_PORT;      // server port number
 int BUFFER_SIZE = DEFAULT_BUFFER_SIZE;      // buffer size for messages
 int MAX_CLIENTS = DEFAULT_MAX_CLIENTS;      // maximum number of clients
 
-void printUsernames() 
-{
-    printf("\n");
-    for (int i = 0; i < MAX_CLIENTS; i++)
-    {
-        printf("%s\n", client_usernames[i]);
-    }
-    printf("\n");
-}
-
 void cleanup(void)
 {
     // close all client sockets
@@ -55,7 +45,6 @@ void signalHandler(int signal)
 
 void chat(char* chat_token, int client_index)
 {
-    //printUsernames();
     //printf("chat token: %s\n", chat_token);
 
     // check if user is logged in
@@ -121,7 +110,7 @@ void chat(char* chat_token, int client_index)
 
         // no user found
         // send back response
-        char* response = "server >> No user by that username to chat.";
+        char* response = "server >> No user by that username to chat";
         printf("%s\n", response);
         int sr = send(client_socks[client_index], response, strlen(response), 0);
         if(sr < 0)
@@ -186,7 +175,6 @@ void handle_client_request(char* client_request, int client_index)
         client_usernames[client_index] = username;
         printf("logging in client id:%d, socket:%d username: %s\n", 
         client_index, client_socks[client_index], client_usernames[client_index]);
-        //printUsernames();
         // send back response
         char* response = "server >> login successful";
         int sr = send(client_socks[client_index], response, strlen(response), 0);
@@ -221,7 +209,7 @@ void handle_client_request(char* client_request, int client_index)
         fprintf(stderr, "unknown command received on client username: %s id:%d, socket:%d\n", 
         client_usernames[client_index], client_index, client_socks[client_index]);
         // send back response
-        char* response = "server >> Unknown command received.";
+        char* response = "server >> Unknown command received.\nusage:\n\tlogin username\n\tchat [@username] message\n\tlogout\n\texit";
         int sr = send(client_socks[client_index], response, strlen(response), 0);
         if(sr < 0)
         {
@@ -355,7 +343,7 @@ void handle_clients(void)
             }
         }
 
-        // check for incoming data from clients
+        // check for incoming data from clients i.e. recv()
         for (i = 0; i < MAX_CLIENTS; i++)
         {
             int sd = client_socks[i];

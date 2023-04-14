@@ -121,25 +121,6 @@ void connect_server()
     }
 }
 
-void login(char *user) 
-{
-    snprintf(username, sizeof(username) - 1, "%s", user);
-    username[sizeof(username) - 1] = '\0';
-    // send login command to server
-    char login_msg[BUFFER_SIZE];
-    snprintf(login_msg, sizeof(login_msg) - 1, "login %s", user);
-    int bytes_sent = send(sock, login_msg, strlen(login_msg), 0);
-    if (bytes_sent < 0) 
-    {
-        perror("Error sending login message");
-        exit(1);
-    } 
-    else 
-    {
-        printf("Logged in as %s\n", user);
-    }
-}
-
 int main(int argc, char *argv[]) 
 {
     if (argc != 2) 
