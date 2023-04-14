@@ -15,13 +15,14 @@ class Connection {
     public:
         pthread_t p_tid;
         string username;
-        bool loggged_in;
+        bool loggged_in, exiting;
         int socket, clientid;
 
     Connection(int sock, int id) {
         socket = sock;
         clientid = id;
         loggged_in = false;
+        exiting = false;
         username = "";
     }
 };
@@ -33,6 +34,7 @@ vector<Connection*> activeconnections;
 */
 void exit_server(int exit_num) {
     for(size_t conn_iter = 0; conn_iter < activeconnections.size(); conn_iter++) {
+        activeconnections[conn_iter]->exiting = true;
         FD_CLR(activeconnections[conn_iter]->socket, &master);
     }
     // sleep before closing socket to avoid select error - this wait has to be more than select wait
@@ -315,6 +317,9 @@ void* read_from_client(void* arg) {
                     usleep(THREAD_WAIT); // sleep 100 ms
                     continue;
                 }*/
+
+                // if exiting, break from loop
+                if(client->exiting) break;
 
                 // got error or connection closed by client
                 if (nbytes == 0) {

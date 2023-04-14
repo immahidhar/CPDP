@@ -13,7 +13,7 @@ void exit_client(int exit_num) {
     exiting = true;
     FD_CLR(cl_sock_fd, &master);
     FD_CLR(cl_sock_fd, &read_fds);
-    usleep(timeout.tv_usec);
+    usleep(THREAD_WAIT);
     close(cl_sock_fd);
     cl_sock_fd = -1;
     exit(exit_num);
@@ -53,55 +53,6 @@ void sendTokenToServer(string token) {
         perror("send");
         cerr << "Error sending packet to server!" << endl;
     }
-}
-
-void printUsage(void) {
-    cerr << "incorrect command entered!" << endl;
-    cerr << "usage:\n\tlogin username\n\tchat [@username] message\n\tlogout\n\texit" << endl;
-}
-
-/**
- * process command entered
-*/
-void process_command(string line, string* tokens) {
-    string command = tokens[0];
-
-    if(command == "exit") {
-
-        if(!logged_in) {
-            cout << "exiting client" << endl;
-            exit_client(0);
-        } else {
-            cout << "User isn't logged out. Logout before exiting." << endl;
-        }
-
-    } else if(command == "login") {
-
-        if(tokens[1] == "NULL") {
-            printUsage();
-            return;
-        }
-        cout << "logging in user \"" << tokens[1] << "\"" << endl;
-        sendTokenToServer(line);
-
-    } else if(command == "logout") {
-
-        cout << "logging out" << endl;
-        sendTokenToServer(line);
-
-    } else if(command == "chat") {
-
-        if(logged_in) {
-            if(tokens[1] == "NULL") {
-                printUsage();
-                return;
-            }
-            sendTokenToServer(line);
-        } else {
-            cout << "User isn't logged in. Login before trying to chat." << endl;
-        }
-
-    } else printUsage();
 }
 
 /**
@@ -228,6 +179,69 @@ void client_init(void) {
     }
     timeout.tv_sec = 0;
     timeout.tv_usec = SELECT_WAIT;
+}
+
+void printUsage(void) {
+    cerr << "incorrect command entered!" << endl;
+    cerr << "usage:\n\tlogin username\n\tchat [@username] message\n\tlogout\n\texit" << endl;
+}
+
+/**
+ * process command entered
+*/
+void process_command(string line, string* tokens) {
+    string command = tokens[0];
+
+    if(command == "exit") {
+
+        if(!logged_in) {
+            cout << "exiting client" << endl;
+            exit_client(0);
+        } else {
+            cout << "User isn't logged out. Logout before exiting." << endl;
+        }
+
+    } else if(command == "login") {
+
+        if(tokens[1] == "NULL") {
+            printUsage();
+            return;
+        }
+
+        // check if server is connected
+        /*if(cl_sock_fd == -1) {
+            client_init();
+            pthread_create(&cl_sock_tid, NULL, &client_run, NULL);
+        }*/
+
+        cout << "logging in user \"" << tokens[1] << "\"" << endl;
+        sendTokenToServer(line);
+
+    } else if(command == "logout") {
+
+        cout << "logging out" << endl;
+        sendTokenToServer(line);
+        
+        /*usleep(THREAD_WAIT);
+        FD_CLR(cl_sock_fd, &master);
+        FD_CLR(cl_sock_fd, &read_fds);
+        usleep(THREAD_WAIT);
+        close(cl_sock_fd);
+        cl_sock_fd = -1;*/
+
+    } else if(command == "chat") {
+
+        if(logged_in) {
+            if(tokens[1] == "NULL") {
+                printUsage();
+                return;
+            }
+            sendTokenToServer(line);
+        } else {
+            cout << "Yor're not logged in. Login before trying to chat." << endl;
+        }
+
+    } else printUsage();
 }
 
 /**
