@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -pthread
+CFLAGS = -std=gnu99 -Wall -pthread
 DEPS = 
 OBJ_SERVER = server.o
 OBJ_CLIENT = client.o
