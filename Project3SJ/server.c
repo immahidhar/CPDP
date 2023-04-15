@@ -170,6 +170,18 @@ void handle_client_request(char* client_request, int client_index)
     //printf("%s\n", command);
     if(strcmp(command, "login") == 0)
     {
+        if(strcmp(client_usernames[client_index], "") != 0)
+        {
+            char* response = "server >> An user is already logged in. Logout to login another user.";
+            printf("%s\n", response);
+            int sr = send(client_socks[client_index], response, strlen(response), 0);
+            if(sr < 0)
+            {
+                fprintf(stderr, "Error broadcasting data to client id: %d, socket: %d\n", 
+                client_index, client_socks[client_index]);
+            }
+            return;
+        }
         char* username = &client_request[ci+1];
         //printf("%s\n", username);
         client_usernames[client_index] = username;
@@ -186,6 +198,18 @@ void handle_client_request(char* client_request, int client_index)
     }
     else if(strcmp(command, "logout") == 0) 
     {
+        if(strcmp(client_usernames[client_index], "") == 0)
+        {
+            char* response = "server >> No user logged in to logout";
+            printf("%s\n", response);
+            int sr = send(client_socks[client_index], response, strlen(response), 0);
+            if(sr < 0)
+            {
+                fprintf(stderr, "Error broadcasting data to client id: %d, socket: %d\n", 
+                client_index, client_socks[client_index]);
+            }
+            return;
+        }
         printf("logging out client username: %s id:%d, socket:%d\n", 
         client_usernames[client_index], client_index, client_socks[client_index]);
         client_usernames[client_index] = "";
