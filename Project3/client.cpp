@@ -219,8 +219,12 @@ void process_command(string line, string* tokens) {
 
     } else if(command == "logout") {
 
-        cout << "logging out" << endl;
-        sendTokenToServer(line);
+        if(logged_in) {
+            cout << "logging out" << endl;
+            sendTokenToServer(line);
+        } else {
+            cout << "User isn't logged in to logout." << endl;
+        }
         
         /*usleep(THREAD_WAIT);
         FD_CLR(cl_sock_fd, &master);
