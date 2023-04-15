@@ -8,6 +8,7 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 #include <netinet/in.h>
+#include <signal.h>
 
 #define CONFIG_FILE "client.conf" // configuration file name
 #define BUFFER_SIZE 1024         // buffer size for messages
