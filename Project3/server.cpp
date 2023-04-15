@@ -348,7 +348,7 @@ void* read_from_client(void* arg) {
 
                 string response = "User \"" + client->username + "\" is disconnected from chat.";
                 response = "server >> " + response;
-                send_token_to_client(response, client, true, true);
+                if (client->username != "") send_token_to_client(response, client, true, true);
 
                 //pthread_mutex_unlock(&mutx);
                 return 0;
