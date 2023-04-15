@@ -190,11 +190,12 @@ void logout(string* tokens, Connection* conn) {
     cout << "logging out user " << conn->username << endl;
     string response = "User \"" + conn->username + "\"" + LOGOUT_SUCCESS;
     conn->loggged_in = false;
+    string username = conn->username;
     conn->username = "";
     response = "server >> " + response;
     cout << response << endl;
     send_token_to_client(response, conn, false, true);
-    response = "User \"" + conn->username + "\" left the chat.";
+    response = "User \"" + username + "\" left the chat.";
     response = "server >> " + response;
     send_token_to_client(response, conn, true, true);
 }
