@@ -35,13 +35,13 @@ make server.x
 ./server.x chat_server_configuration_file
 ```
 
-The "chat_server_configuration_file" consists of only one configuration i.e. the port number on which the server listens to. Provide the port number you want the server to use here.
+The "chat_server_configuration_file" consists of only one configuration i.e. the port number on which the server listens to. Provide the port number you want the server to use here. Run server program first before running client so that clients can connect to server at startup.
 
 ## Client
 
 The chat client program opens up a socket and connects to the chat server based on the configuration provided in the config file. The user can enter the commands described below and chat with other users.
 
-The client program creates a separate thread to read data from server and print to console using pthread library. The main thread waits for user input on console and processes/sends the command entered to server. In addition, select function is used to let the program know when there is data read on the socket to read.
+The client program creates a separate thread to read data from server and print to console using pthread library. The main thread waits for user input on console and processes/sends the command entered to server. In addition, select function is used to let the program know when there is data read on the socket to read. Make sure server program is started before running client program.
 
 **To compile chat client program, execute the following in terminal**
 ```

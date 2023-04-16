@@ -170,6 +170,7 @@ void handle_client_request(char* client_request, int client_index)
     //printf("%s\n", command);
     if(strcmp(command, "login") == 0)
     {
+        // check if client already logged in
         if(strcmp(client_usernames[client_index], "") != 0)
         {
             char* response = "server >> An user is already logged in. Logout to login another user.";
@@ -182,7 +183,27 @@ void handle_client_request(char* client_request, int client_index)
             }
             return;
         }
+        // check if username already present
         char* username = &client_request[ci+1];
+        // search for username
+        for (int i = 0; i < MAX_CLIENTS; i++)
+        {
+            if(strcmp(client_usernames[i], "") != 0)
+            {
+                if(strcmp(client_usernames[i], username) == 0)
+                {
+                    char* response = "server >> An user is already present with that username. Please choose another username.";
+                    printf("%s\n", response);
+                    int sr = send(client_socks[client_index], response, strlen(response), 0);
+                    if(sr < 0)
+                    {
+                        fprintf(stderr, "Error broadcasting data to client id: %d, socket: %d\n", 
+                        client_index, client_socks[client_index]);
+                    }
+                    return;
+                }
+            }
+        }
         //printf("%s\n", username);
         client_usernames[client_index] = username;
         printf("logging in client id:%d, socket:%d username: %s\n", 
@@ -226,7 +247,6 @@ void handle_client_request(char* client_request, int client_index)
     {
         char* chat_token = &client_request[ci+1];
         chat(chat_token, client_index);
-        // send back response
     }
     else
     {
