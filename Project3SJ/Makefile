@@ -19,4 +19,4 @@ client.x: $(OBJ_CLIENT)
 .PHONY: clean
 
 clean:
-	rm -f $(OBJ) server client
+	rm -f $(OBJ) *.x
