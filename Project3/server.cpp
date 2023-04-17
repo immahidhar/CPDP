@@ -62,7 +62,11 @@ void server_init(void) {
     }
 
     char hostname[50];
-    gethostname(hostname,sizeof(hostname));
+    if(gethostname(hostname,sizeof(hostname)) != 0) {
+        perror("gethostname");
+        close(serv_sock_fd);
+        exit(EXIT_FAILURE);
+    }
     
     cout << "Server started on " << hostname << ":" << htons(serv_address.sin_port) << endl;
 
