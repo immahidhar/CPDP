@@ -56,7 +56,7 @@ public class OrderController {
                     .map(this::convertToDTO).collect(Collectors.toList());
         return null;
     }
-    @Transactional
+    //@Transactional
     @PostMapping(path="/place")
     public ResponseEntity<String> placeOrder(@RequestBody OrderDTO orderDTO) {
         Optional<User> user = userRepository.findById(orderDTO.getUserId());
@@ -76,7 +76,7 @@ public class OrderController {
         productRepository.save(product.get());
         return ResponseEntity.status(HttpStatus.CREATED).body("Order placed successfully");
     }
-    @Transactional
+    //@Transactional
     @PutMapping(path="/update")
     public ResponseEntity<String> updateOrder(@RequestBody OrderDTO orderDTO) {
         Optional<Order> order = orderRepository.findById(orderDTO.getId());

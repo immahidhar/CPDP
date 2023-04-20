@@ -1,0 +1,52 @@
+[test]
+num_requests = 100000
+
+[threads]
+max_threads = 100
+
+[machines]
+processes = ["http://localhost:8080/"]
+
+[api]
+apis = ["get_users", "get_orders", "search_product", "update_product", "place_order"]
+
+[get_users]
+request_type = GET
+api_url = user/get_all
+payload =
+headers =
+
+[get_orders]
+request_type = GET
+api_url = order/get?userId=8
+payload =
+headers =
+
+[search_product]
+request_type = GET
+api_url = search?query=books&sleep_millis=500
+payload =
+headers =
+
+[update_product]
+request_type = PUT
+api_url = product/update
+payload = {
+    "id": 7,
+    "category": "books",
+    "name": "Harry Potter",
+    "price": 19.99,
+    "quantity": 1000
+    }
+headers =
+
+[place_order]
+request_type = POST
+api_url = order/place
+payload = {
+    "userId": 8,
+    "productId": 7,
+    "quantity": 10,
+    "address": "Student Union, FSU"
+    }
+headers =
