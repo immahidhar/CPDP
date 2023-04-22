@@ -3,9 +3,11 @@
 import json
 import random
 
+import time
 import random
 import requests
 import statistics
+import numpy as np
 from time import sleep
 from configparser import ConfigParser
 from concurrent.futures import ThreadPoolExecutor
@@ -15,7 +17,7 @@ api_config_filename = "api_config"
 
 class API:
     """
-    api class to store api info including api response
+    API class to store api info including api response
     """
     api: str
     req_type: str
@@ -132,6 +134,11 @@ def compute_performance(futures):
     print("Number of requests successfully = " + num_reqs_successful.__str__())
     if elapsed_list.__len__() > 0:
         print("Average response time = " + statistics.mean(elapsed_list).__str__())
+        print("p99 = " + np.percentile(elapsed_list, 99).__str__())
+        print("p90 = " + np.percentile(elapsed_list, 90).__str__())
+        print("p75 = " + np.percentile(elapsed_list, 75).__str__())
+        print("p50 = " + np.percentile(elapsed_list, 50).__str__())
+        print("p25 = " + np.percentile(elapsed_list, 25).__str__())
 
 
 def main():
@@ -153,10 +160,28 @@ def main():
     # thread results
     futures = list()
 
+    start_time = round(time.time() * 1000)
+    start = start_time
+    print("Start time = " + time.time().__str__())
+
     # send num_requests requests randomly among machines and apis
     num_reqs = int(config["test"]["num_requests"])
-    print("sending " + num_reqs.__str__() + " requests")
+    rps = int(config["test"]["rps"])
+    print("sending " + num_reqs.__str__() + " requests at " + rps.__str__() + " requests per second ... ")
     for i in range(num_reqs):
+        # rate limiting
+        if i != 0 and i % rps == 0:
+            now = round(time.time() * 1000)
+            if now - start_time < 1000:
+                # exceeding rps
+                print("time = " + time.time().__str__())
+                print("Sent " + i.__str__() + " requests, waiting")
+                # wait
+                sleep((1000 - (now - start_time)) / 1000)
+                start_time = round(time.time() * 1000)
+            else:
+                print("Sent " + i.__str__() + " requests")
+
         # get random numbers
         process_index = random.choice(range(num_processes))
         api_index = random.choice(range(num_api))
@@ -175,6 +200,9 @@ def main():
 
         # submit task to thread pool
         futures.append(executor.submit(test, api_obj))
+
+    end = round(time.time() * 1000)
+    print("All " + num_reqs.__str__() + " requests send in " + (end - start).__str__() + " seconds")
 
     # compute performance
     compute_performance(futures)
