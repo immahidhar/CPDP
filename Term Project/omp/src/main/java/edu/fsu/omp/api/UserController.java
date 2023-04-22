@@ -15,6 +15,7 @@ import javax.transaction.Transactional;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -29,9 +30,11 @@ public class UserController {
 
     @GetMapping(path="/get_all")
     @ResponseStatus(HttpStatus.OK)
-    public @ResponseBody List<UserDTO> getAllUsers() {
-        return StreamSupport.stream(userRepository.findAll().spliterator(), false)
-                .map(this::convertToDTO).collect(Collectors.toList());
+    public @ResponseBody Callable<List<UserDTO>> getAllUsers() {
+        return () -> {
+            return StreamSupport.stream(userRepository.findAll().spliterator(), false)
+                    .map(this::convertToDTO).collect(Collectors.toList());
+        };
     }
     @GetMapping(path="/get")
     @ResponseStatus(HttpStatus.OK)

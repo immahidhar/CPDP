@@ -130,15 +130,17 @@ def compute_performance(futures):
                 res_elapsed: datetime.timedelta = api_obj.res.elapsed
                 elapsed_list.append(res_elapsed.total_seconds())
 
-    print("Number of requests failed = " + num_reqs_failed.__str__())
-    print("Number of requests successfully = " + num_reqs_successful.__str__())
+    print("\tNumber of requests failed = " + num_reqs_failed.__str__())
+    print("\tNumber of requests successful = " + num_reqs_successful.__str__())
+    print("\tPercentage of requests successful = " + (
+                num_reqs_successful / (num_reqs_successful + num_reqs_failed) * 100).__str__())
     if elapsed_list.__len__() > 0:
-        print("Average response time = " + statistics.mean(elapsed_list).__str__())
-        print("p99 = " + np.percentile(elapsed_list, 99).__str__())
-        print("p90 = " + np.percentile(elapsed_list, 90).__str__())
-        print("p75 = " + np.percentile(elapsed_list, 75).__str__())
-        print("p50 = " + np.percentile(elapsed_list, 50).__str__())
-        print("p25 = " + np.percentile(elapsed_list, 25).__str__())
+        print("\tAverage response time = " + statistics.mean(elapsed_list).__str__())
+        print("\tp99 = " + np.percentile(elapsed_list, 99).__str__())
+        print("\tp90 = " + np.percentile(elapsed_list, 90).__str__())
+        print("\tp75 = " + np.percentile(elapsed_list, 75).__str__())
+        print("\tp50 = " + np.percentile(elapsed_list, 50).__str__())
+        print("\tp25 = " + np.percentile(elapsed_list, 25).__str__())
 
 
 def main():
@@ -160,8 +162,8 @@ def main():
     # thread results
     futures = list()
 
-    start_time = round(time.time() * 1000)
-    start = start_time
+    start = time.time()
+    start_time = round(start * 1000)
     print("Start time = " + time.time().__str__())
 
     # send num_requests requests randomly among machines and apis
@@ -182,8 +184,9 @@ def main():
             else:
                 print("Sent " + i.__str__() + " requests")
 
-        # get random numbers
-        process_index = random.choice(range(num_processes))
+        # round-robin
+        process_index = i % num_processes
+        # get random number
         api_index = random.choice(range(num_api))
         # print(process_index, api_index)
 
@@ -201,7 +204,7 @@ def main():
         # submit task to thread pool
         futures.append(executor.submit(test, api_obj))
 
-    end = round(time.time() * 1000)
+    end = time.time()
     print("All " + num_reqs.__str__() + " requests send in " + (end - start).__str__() + " seconds")
 
     # compute performance

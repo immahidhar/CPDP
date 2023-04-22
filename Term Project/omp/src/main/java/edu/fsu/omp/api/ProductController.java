@@ -15,6 +15,7 @@ import javax.transaction.Transactional;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -55,17 +56,19 @@ public class ProductController {
     }
     @Transactional
     @PutMapping(path="/update")
-    public ResponseEntity<String> updateProduct(@RequestBody ProductDTO productDTO) {
-        Optional<Product> product = productRepository.findById(productDTO.getId());
-        if(!product.isPresent())
-            return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("Product not available!");
-        product.get().setName(productDTO.getName());
-        product.get().setCategory(productDTO.getCategory().toString());
-        product.get().setPrice(productDTO.getPrice());
-        product.get().setQuantity(productDTO.getQuantity());
-        product.get().setAddress(productDTO.getAddress());
-        productRepository.save(product.get());
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body("Product updated successfully!");
+    public Callable<ResponseEntity<String>> updateProduct(@RequestBody ProductDTO productDTO) {
+        return () -> {
+            Optional<Product> product = productRepository.findById(productDTO.getId());
+            if (!product.isPresent())
+                return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("Product not available!");
+            product.get().setName(productDTO.getName());
+            product.get().setCategory(productDTO.getCategory().toString());
+            product.get().setPrice(productDTO.getPrice());
+            product.get().setQuantity(productDTO.getQuantity());
+            product.get().setAddress(productDTO.getAddress());
+            productRepository.save(product.get());
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body("Product updated successfully!");
+        };
     }
     @Transactional
     @DeleteMapping(path="/delete")

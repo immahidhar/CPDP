@@ -1,83 +1,69 @@
 Load Testing
 
-1 process 10 threads, 10000 requests at 100 rps
-	Number of requests failed = 1808
-	Number of requests successfully = 8192
-	Average response time = 2.504993313720703
-	p99 = 3.7658733700000004
-	p90 = 3.1078726000000003
-	p75 = 2.7819214999999997
-	p50 = 2.44085
-	p25 = 2.10916325
+3 sec timeout
 
-1 process 100 threads, 10000 requests at 100 rps
+1 process 100 threads, 1000 requests at 10 rps
 	Number of requests failed = 0
-	Number of requests successfully = 10000
-	Average response time = 0.2579756246
-	p99 = 0.6047382300000004
-	p90 = 0.5179174
-	p75 = 0.37079625
-	p50 = 0.2155665
-	p25 = 0.12859474999999998
+	Number of requests successful = 1000
+	Percentage of requests successful = 100.0
+	Average response time = 0.108905079
+	p99 = 0.28711035999999945
+	p90 = 0.1736006
+	p75 = 0.14025125
+	p50 = 0.0988475
+	p25 = 0.0664835
 
-1 process 100 threads, 10000 requests at 500 rps
-	Number of requests failed = 7244
-	Number of requests successfully = 2756
-	Average response time = 1.6388182173439767
-	p99 = 5.90772705
-	p90 = 2.8438285
-	p75 = 1.6978605
-	p50 = 1.1569265
-	p25 = 0.84485825
+1 process 100 threads, 1000 requests at 100 rps
+	Number of requests failed = 687
+	Number of requests successful = 313
+	Percentage of requests successful = 31.3
+	Average response time = 8.119739188498402
+	p99 = 13.01148708
+	p90 = 11.7983388
+	p75 = 9.910059
+	p50 = 8.070072
+	p25 = 6.549639
 
-1 process 200 threads, 10000 requests at 500 rps
-	Number of requests failed = 7898
-	Number of requests successfully = 2102
-	Average response time = 2.213405083254044
-	p99 = 8.335529689999998
-	p90 = 4.7057087
-	p75 = 2.15894875
-	p50 = 1.603793
-	p25 = 1.141695
+1 process 500 threads, 10000 requests at 100 rps
+	Number of requests failed = 651
+	Number of requests successful = 349
+	Percentage of requests successful = 34.9
+	Average response time = 2.8603835616045847
+	p99 = 4.30138932
+	p90 = 4.1198644
+	p75 = 4.039591
+	p50 = 3.921529
+	p25 = 0.341014
 
-1 process 500 threads, 50000 requests at 500 rps
-	Number of requests failed = 36489
-	Number of requests successfully = 13511
-	Average response time = 1.421415114795352
-	p99 = 2.8636029999999995
-	p90 = 1.788
-	p75 = 1.5106045
-	p50 = 1.230675
-	p25 = 0.9821685
+5 process 500 threads, 10000 requests at 100 rps
+	Number of requests failed = 0
+	Number of requests successful = 10000
+	Percentage of requests successful = 100.0
+	Average response time = 0.1397132784
+	p99 = 0.36913384
+	p90 = 0.2527375
+	p75 = 0.1852585
+	p50 = 0.1256515
+	p25 = 0.0786555
 
+5 process 500 threads, 10000 requests at 200 rps
+	Number of requests failed = 847
+	Number of requests successful = 9153
+	Percentage of requests successful = 91.53
+	Average response time = 0.5441859396919043
+	p99 = 9.432112159999996
+	p90 = 0.6590642000000001
+	p75 = 0.323484
+	p50 = 0.111036
+	p25 = 0.022285
 
-2 process 100 threads each, 50000 requests at 500 rps
-	Number of requests failed = 38508
-	Number of requests successfully = 11492
-	Average response time = 1.9353117103202229
-	p99 = 7.971828070000001
-	p90 = 3.2302819
-	p75 = 2.2579747500000003
-	p50 = 1.579782
-	p25 = 1.005706
-
-2 process 500 threads each, 50000 requests at 500 rps
-	Number of requests failed = 40388
-	Number of requests successfully = 9612
-	Average response time = 2.3697493031627133
-	p99 = 10.638766969999988
-	p90 = 3.8905404999999997
-	p75 = 2.9304685
-	p50 = 1.9552795
-	p25 = 1.0069935
-
-5 process 500 threads each, 50000 requests at 500 rps
-	Number of requests failed = 43772
-	Number of requests successfully = 6228
-	Average response time = 9.724008497270392
-	p99 = 28.996487689999995
-	p90 = 21.5029983
-	p75 = 13.748270250000001
-	p50 = 7.601492
-	p25 = 4.07611475
-
+5 process 1000 threads, 10000 requests at 200 rps
+	Number of requests failed = 1217
+	Number of requests successful = 8783
+	Percentage of requests successful = 87.83
+	Average response time = 0.9203707624957304
+	p99 = 12.672174920000002
+	p90 = 0.8555438000000003
+	p75 = 0.1711655
+	p50 = 0.041234
+	p25 = 0.014258

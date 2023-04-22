@@ -1,12 +1,12 @@
 [test]
 num_requests = 10000
-rps = 100
+rps = 200
 
 [threads]
-max_threads = 500
+max_threads = 100
 
 [machines]
-processes = ["http://localhost:8080/"]
+processes = ["http://localhost:8080/", "http://localhost:8081/", "http://localhost:8082/", "http://localhost:8083/", "http://localhost:8084/"]
 
 [api]
 apis = ["get_users", "get_orders", "search_product", "update_product", "place_order"]
@@ -25,7 +25,7 @@ headers =
 
 [search_product]
 request_type = GET
-api_url = search?query=books&sleep_millis=500
+api_url = search?query=books
 payload =
 headers =
 
