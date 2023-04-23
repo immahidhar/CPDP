@@ -20,7 +20,6 @@ import javax.transaction.Transactional;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -38,11 +37,9 @@ public class OrderController {
     private ProductRepository productRepository;
     @GetMapping(path="/get_all")
     @ResponseStatus(HttpStatus.OK)
-    public @ResponseBody Callable<List<OrderDTO>> getAllOrders() {
-        return () -> {
-            return StreamSupport.stream(orderRepository.findAll().spliterator(), false)
-                    .map(this::convertToDTO).collect(Collectors.toList());
-        };
+    public @ResponseBody List<OrderDTO> getAllOrders() {
+        return StreamSupport.stream(orderRepository.findAll().spliterator(), false)
+                .map(this::convertToDTO).collect(Collectors.toList());
     }
     @GetMapping(path="/get")
     @ResponseStatus(HttpStatus.OK)
@@ -61,8 +58,7 @@ public class OrderController {
     }
     //@Transactional
     @PostMapping(path="/place")
-    public Callable<ResponseEntity<String>> placeOrder(@RequestBody OrderDTO orderDTO) {
-        return () -> {
+    public ResponseEntity<String> placeOrder(@RequestBody OrderDTO orderDTO) {
             Optional<User> user = userRepository.findById(orderDTO.getUserId());
             if (!user.isPresent())
                 return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("User not valid!");
@@ -79,7 +75,6 @@ public class OrderController {
             product.get().setQuantity(product.get().getQuantity() - orderDTO.getQuantity());
             productRepository.save(product.get());
             return ResponseEntity.status(HttpStatus.CREATED).body("Order placed successfully");
-        };
     }
     //@Transactional
     @PutMapping(path="/update")

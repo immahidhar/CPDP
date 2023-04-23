@@ -17,19 +17,17 @@ public class SearchController {
     @Autowired
     private ProductSearchService searchService;
     @GetMapping()
-    public Callable<ResponseEntity<String>> getProduct(@RequestParam(required = true) String query,
+    public ResponseEntity<String> getProduct(@RequestParam(required = true) String query,
                                        @RequestParam(required = false) Integer sleep_millis) {
-        return () -> {
-            if(sleep_millis != null) {
-                try {
-                    log.debug("----- search sleeping -----");
-                    Thread.sleep(sleep_millis);
-                } catch (InterruptedException e) {
-                    log.debug("----- search interrupted, timing out -----");
-                    return ResponseEntity.status(HttpStatus.GATEWAY_TIMEOUT).body("Timeout");
-                }
+        if(sleep_millis != null) {
+            try {
+                log.debug("----- search sleeping -----");
+                Thread.sleep(sleep_millis);
+            } catch (InterruptedException e) {
+                log.debug("----- search interrupted, timing out -----");
+                return ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT).body("Timeout");
             }
-            return ResponseEntity.status(HttpStatus.OK).body(searchService.search(query).toString());
-        };
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(searchService.search(query).toString());
     }
 }

@@ -6,6 +6,7 @@ import random
 import time
 import random
 import requests
+import threading
 import statistics
 import numpy as np
 from time import sleep
@@ -13,6 +14,15 @@ from configparser import ConfigParser
 from concurrent.futures import ThreadPoolExecutor
 
 api_config_filename = "api_config"
+
+lock = threading.Lock()
+
+# thread results
+futures = list()
+req_count = 0
+
+start = time.time()
+print("Start time = " + time.time().__str__())
 
 
 class API:
@@ -65,19 +75,34 @@ def get_thread_pool(num_threads):
     return executor
 
 
-def test(api_obj: API):
+def test(api_obj: API, start_t, rps):
     """
     test by sending a http request and check response
     :param api_obj:
     :return:
     """
+    # acquire the lock
+    # lock.acquire()
+
+    # rate limiting
+    global req_count
+    """n_sec = round(time.time() - start_t)
+    # print("req_count: " + req_count.__str__() + " n_sec: " + n_sec.__str__())
+    while req_count > rps and req_count > rps * n_sec:
+        # print("Thread waiting for rate limiting")
+        n_sec = round(time.time() - start_t)
+        sleep(0.01)
+    """
+
     res = None
     api_obj.headers = {
         'Content-Type': 'application/json'
     }
     data = None
+    req_count += 1
     if not api_obj.payload == "":
         data = json.loads(api_obj.payload)
+    # print("Sending request")
     if api_obj.req_type == 'GET':
         try:
             res = requests.get(url=api_obj.url, data=json.dumps(data), headers=api_obj.headers)
@@ -96,20 +121,20 @@ def test(api_obj: API):
     else:
         print("req_type not handled")
     api_obj.res = res
+
+    # print("Received response")
+
+    # release the lock
+    # lock.release()
+
     return api_obj
 
 
-def compute_performance(futures):
+def compute_performance():
     """
     computer performance
-    :param futures:
     :return:
     """
-    # wait for all threads to be done
-    for thread in futures:
-        while not thread.done():
-            sleep(1)
-
     # get results to compute performance
     num_reqs_failed = 0
     num_reqs_successful = 0
@@ -148,7 +173,6 @@ def main():
     test performance
     :return:
     """
-
     # get config
     config, max_threads, processes_apis, apis = get_api_config(api_config_filename)
     print(max_threads, processes_apis, apis)
@@ -159,12 +183,6 @@ def main():
 
     # get thread pool
     executor = get_thread_pool(int(max_threads))
-    # thread results
-    futures = list()
-
-    start = time.time()
-    start_time = round(start * 1000)
-    print("Start time = " + time.time().__str__())
 
     # send num_requests requests randomly among machines and apis
     num_reqs = int(config["test"]["num_requests"])
@@ -172,21 +190,16 @@ def main():
     print("sending " + num_reqs.__str__() + " requests at " + rps.__str__() + " requests per second ... ")
     for i in range(num_reqs):
         # rate limiting
-        if i != 0 and i % rps == 0:
-            now = round(time.time() * 1000)
-            if now - start_time < 1000:
-                # exceeding rps
-                print("time = " + time.time().__str__())
-                print("Sent " + i.__str__() + " requests, waiting")
-                # wait
-                sleep((1000 - (now - start_time)) / 1000)
-                start_time = round(time.time() * 1000)
-            else:
-                print("Sent " + i.__str__() + " requests")
+        """n_sec = round(time.time() - start)
+        while i > rps and i > rps * n_sec:
+            print(time.time().__str__() + ": sent " + req_count.__str__() + " requests, waiting ...")
+            n_sec = round(time.time() - start)
+            sleep(1)
+        """
 
-        # round-robin
+        # round-robin for process
         process_index = i % num_processes
-        # get random number
+        # get random number for api
         api_index = random.choice(range(num_api))
         # print(process_index, api_index)
 
@@ -202,13 +215,24 @@ def main():
         # print(api_obj.__str__())
 
         # submit task to thread pool
-        futures.append(executor.submit(test, api_obj))
+        futures.append(executor.submit(test, api_obj, start, rps))
+
+    # print num of reqs sent
+    while req_count < num_reqs:
+        print(time.time().__str__() + ": sent " + req_count.__str__() + " requests")
+        sleep(1)
 
     end = time.time()
     print("All " + num_reqs.__str__() + " requests send in " + (end - start).__str__() + " seconds")
+    print("RPS = " + (num_reqs / round(end-start)).__str__())
+
+    # wait for all threads to be done
+    for thread in futures:
+        while not thread.done():
+            sleep(1)
 
     # compute performance
-    compute_performance(futures)
+    compute_performance()
 
     # shutdown thread pool
     executor.shutdown()

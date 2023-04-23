@@ -1,9 +1,9 @@
 [test]
 num_requests = 10000
-rps = 200
+rps = 100
 
 [threads]
-max_threads = 100
+max_threads = 500
 
 [machines]
 processes = ["http://localhost:8080/", "http://localhost:8081/", "http://localhost:8082/", "http://localhost:8083/", "http://localhost:8084/"]
