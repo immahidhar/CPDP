@@ -11,6 +11,10 @@ Make sure the following are installed on the system.
 ### Database tables
 Run the following db scripts to create the tables needed for the software.
 
+    CREATE DATABSE omp;
+
+    USE omp;
+
     CREATE TABLE `User` (
     `id` int NOT NULL AUTO_INCREMENT,
     `username` varchar(100) NOT NULL,
@@ -44,7 +48,7 @@ Run the following db scripts to create the tables needed for the software.
     CONSTRAINT `user_id` FOREIGN KEY (`user_id`) REFERENCES `User` (`id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb3;
 
-The Database connection can be configured by passing the following:
+The Database connection can be configured by passing the following arguments at runtime:
 
     -Dspring.datasource.url=jdbc:mysql://localhost:3306/omp
     -Dspring.datasource.username=root
