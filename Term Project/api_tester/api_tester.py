@@ -1,8 +1,6 @@
 # API tester for concurrency and distributed performance
 
 import json
-import random
-
 import time
 import random
 import requests
@@ -86,13 +84,12 @@ def test(api_obj: API, start_t, rps):
 
     # rate limiting
     global req_count
-    """n_sec = round(time.time() - start_t)
+    n_sec = round(time.time() - start_t)
     # print("req_count: " + req_count.__str__() + " n_sec: " + n_sec.__str__())
     while req_count > rps and req_count > rps * n_sec:
         # print("Thread waiting for rate limiting")
         n_sec = round(time.time() - start_t)
         sleep(0.01)
-    """
 
     res = None
     api_obj.headers = {
@@ -190,12 +187,11 @@ def main():
     print("sending " + num_reqs.__str__() + " requests at " + rps.__str__() + " requests per second ... ")
     for i in range(num_reqs):
         # rate limiting
-        """n_sec = round(time.time() - start)
+        n_sec = round(time.time() - start)
         while i > rps and i > rps * n_sec:
             print(time.time().__str__() + ": sent " + req_count.__str__() + " requests, waiting ...")
             n_sec = round(time.time() - start)
             sleep(1)
-        """
 
         # round-robin for process
         process_index = i % num_processes
