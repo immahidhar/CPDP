@@ -11,7 +11,7 @@ Make sure the following are installed on the system.
 ### Database tables
 Run the following db scripts to create the tables needed for the software.
 
-    CREATE DATABSE omp;
+    CREATE DATABASE omp;
 
     USE omp;
 
@@ -85,9 +85,9 @@ Get all users
 
     curl --location 'http://localhost:8080/user/get_all'
 
-Get user by id
+Get user by user id or username
 
-    curl --location 'http://localhost:8080/user/get?username=user2'
+    curl --location 'http://localhost:8080/user/get?id=0&username=user2'
 
 Update user
 
@@ -100,9 +100,9 @@ Update user
     "address": "address and pincode"
     }'
 
-Delete user by username
+Delete user by user id or username
 
-    curl --location --request DELETE 'http://localhost:8080/user/delete?username=user3'
+    curl --location --request DELETE 'http://localhost:8080/user/delete?id=0&username=user3'
 
 Delete all users
 
@@ -124,9 +124,9 @@ Get all products
 
     curl --location 'http://localhost:8080/product/get_all'
 
-Get product by id
+Get product by id, name or category
 
-    curl --location 'http://localhost:8080/product/get?category=books'
+    curl --location 'http://localhost:8080/product/get?id=1&name=&category=books'
 
 Update product
 
@@ -140,9 +140,9 @@ Update product
     "quantity": 100
     }'
 
-Delete product by id
+Delete product by id or name
 
-    curl --location --request DELETE 'http://localhost:8080/product/delete?name=House%20of%20Dragons'
+    curl --location --request DELETE 'http://localhost:8080/product/delete?id=1&name=House%20of%20Dragons'
 
 Delete all products
 
@@ -167,9 +167,9 @@ Get all orders
 
     curl --location 'http://localhost:8080/order/get_all'
 
-Get order by id
+Get order by order id or user id or product id
 
-    curl --location 'http://localhost:8080/order/get?userId=8'
+    curl --location 'http://localhost:8080/order/get?id=0&userId=8&productId=7'
 
 Update order
 
@@ -184,9 +184,9 @@ Update order
     "address": "Student Union, FSU"
     }'
 
-Delete order by id
+Delete order by id or user id
 
-    curl --location --request DELETE 'http://localhost:8080/order/delete?userId=8'
+    curl --location --request DELETE 'http://localhost:8080/order/delete?id=1&userId=8'
 
 Delete all orders
 
