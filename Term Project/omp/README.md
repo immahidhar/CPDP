@@ -50,6 +50,19 @@ The Database connection can be configured by passing the following:
     -Dspring.datasource.username=root
     -Dspring.datasource.password=
 
+
+## Build
+To build the software, enter the following:
+```command line
+$ mvn clean install -DskipTests
+```
+
+## Run
+To run the software, execute the following:
+```command line
+$ java -jar -Dserver.port=8080 -Dserver.tomcat.threads.max=500 ./target/omp-1.jar
+```
+
 ## API
 Here are the APIs of the software.
 
@@ -174,17 +187,4 @@ Delete order by id
 Delete all orders
 
     curl --location --request DELETE 'http://localhost:8080/order/delete_all'
-
-
-## Build
-To build the software, enter the following:
-```command line
-$ mvn clean install -DskipTests
-```
-
-## Run
-To run the software, execute the following:
-```command line
-$ java -jar -Dserver.port=8080 -Dserver.tomcat.threads.max=500 ./target/omp-1.jar
-```
 
