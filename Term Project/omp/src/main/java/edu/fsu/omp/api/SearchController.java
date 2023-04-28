@@ -1,7 +1,6 @@
 package edu.fsu.omp.api;
 
 import edu.fsu.omp.data.ProductDTO;
-import edu.fsu.omp.entity.Product;
 import edu.fsu.omp.service.ProductSearchService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 @Slf4j
 @Controller
