@@ -12,5 +12,4 @@ public class ProductDTO {
     private double price;
     private int quantity;
     private String address;
-
 }

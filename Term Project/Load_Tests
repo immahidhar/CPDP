@@ -1,0 +1,78 @@
+Load Testing
+
+1 process 10 threads, 10000 requests
+	Number of requests failed = 0
+	Number of requests successful = 10000
+	Percentage of requests successful = 100.0
+	Average response time = 11.6936509806
+	p99 = 16.28865019
+	p90 = 13.969634800000001
+	p75 = 12.67432675
+	p50 = 11.4694885
+	p25 = 10.6039855
+
+1 process 100 threads, 10000 requests
+	Number of requests failed = 0
+	Number of requests successful = 10000
+	Percentage of requests successful = 100.0
+	Average response time = 10.5468951516
+	p99 = 16.130068910000006
+	p90 = 13.2197223
+	p75 = 11.87301475
+	p50 = 10.552753
+	p25 = 9.392434
+
+1 process 200 threads, 10000 requests
+	Number of requests failed = 0
+	Number of requests successful = 10000
+	Percentage of requests successful = 100.0
+	Average response time = 12.7454544314
+	p99 = 24.60012222
+	p90 = 17.6969204
+	p75 = 14.4793815
+	p50 = 12.8224795
+	p25 = 11.221440999999999
+
+2 processes 200 threads each, 10000 requests
+	Number of requests failed = 0
+	Number of requests successful = 10000
+	Percentage of requests successful = 100.0
+	Average response time = 1.5612667483
+	p99 = 6.087765820000001
+	p90 = 3.1193353000000004
+	p75 = 1.989168
+	p50 = 1.4579499999999999
+	p25 = 0.44920974999999996
+
+3 processes 200 threads each, 10000 requests
+	Number of requests failed = 0
+	Number of requests successful = 10000
+	Percentage of requests successful = 100.0
+	Average response time = 0.956750939
+	p99 = 3.1981316300000002
+	p90 = 1.747173
+	p75 = 1.19986175
+	p50 = 0.8453295000000001
+	p25 = 0.49721625
+
+4 processes 200 threads each, 10000 requests
+	Number of requests failed = 0
+	Number of requests successful = 10000
+	Percentage of requests successful = 100.0
+	Average response time = 3.7872625971
+	p99 = 9.706706840000011
+	p90 = 6.9710087000000005
+	p75 = 4.78762825
+	p50 = 3.061473
+	p25 = 2.43351075
+
+5 processes 200 threads each, 10000 requests
+	Number of requests failed = 4
+	Number of requests successful = 9996
+	Percentage of requests successful = 99.96000000000001
+	Average response time = 6.886847681972789
+	p99 = 49.82983724999998
+	p90 = 27.609071999999998
+	p75 = 4.137304500000001
+	p50 = 2.0491435
+	p25 = 0.810584

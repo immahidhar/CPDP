@@ -5,13 +5,14 @@ import edu.fsu.omp.data.ProductDTO;
 import edu.fsu.omp.entity.Product;
 import edu.fsu.omp.repo.ProductRepository;
 import edu.fsu.omp.util.ModelMapperUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
+@Slf4j
 @Component
 public class ProductSearchService {
     @Autowired

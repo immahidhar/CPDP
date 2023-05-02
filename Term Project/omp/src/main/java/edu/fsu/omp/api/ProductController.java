@@ -57,7 +57,7 @@ public class ProductController {
     @PutMapping(path="/update")
     public ResponseEntity<String> updateProduct(@RequestBody ProductDTO productDTO) {
         Optional<Product> product = productRepository.findById(productDTO.getId());
-        if(!product.isPresent())
+        if (!product.isPresent())
             return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("Product not available!");
         product.get().setName(productDTO.getName());
         product.get().setCategory(productDTO.getCategory().toString());
